@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - MyTexi
 
 on:
@@ -28,7 +25,6 @@ jobs:
           npm install
           npm run build --if-present
           npm run test --if-present
-
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
 
@@ -55,11 +51,11 @@ jobs:
         run: unzip release.zip
       
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_9B7F079B5A4B41779C7CC26176FB487F }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C5F181D407644E50A0BCF72B0A7E4F51 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_162ACB1FBBCF415F80ED5418AC022CEB }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -68,4 +64,3 @@ jobs:
           app-name: 'MyTexi'
           slot-name: 'Production'
           package: .
-          
