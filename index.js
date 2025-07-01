@@ -23,8 +23,6 @@ const path = require('path');
 // Serve static files (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname)));
 
-
-
 function authenticate(req, res, next) {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
