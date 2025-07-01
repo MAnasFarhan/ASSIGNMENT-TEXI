@@ -1,198 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MyTaxi Login/Register</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyTexi - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #f3f3f3, #ffe680);
+    * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
-    .container {
-      max-width: 500px;
-      margin: 5% auto;
-      background: #fff;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    body {
+      font-family: 'Poppins', sans-serif;
+      height: 100vh;
+      background: linear-gradient(135deg, #f0f0f0, #c0c0c0, #e0ffff, #000000);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #222;
     }
-    h1 {
-      text-align: center;
-      color: #d4af37;
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
-    input, select, button {
-      display: block;
+    .title {
+      font-size: 4.5rem;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 2px 2px 4px #c0c0c0;
+      margin-bottom: 2rem;
+      letter-spacing: 3px;
+      transition: transform 0.3s ease;
+    }
+    .title:hover {
+      transform: scale(1.05);
+    }
+    .login-container {
+      background: #ffffff;
       width: 100%;
-      padding: 10px;
-      margin: 10px 0;
+      max-width: 450px;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      text-align: center;
+      animation: fadeIn 0.5s ease-in-out;
+      border: 2px solid #00ced1;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    h1, h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+    .input-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #444;
+    }
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: #f5f5f5;
       font-size: 1rem;
       border: 1px solid #ccc;
-      border-radius: 6px;
     }
-    button {
-      background: linear-gradient(to right, gold, silver);
-      font-weight: bold;
+    .input-group input:focus,
+    .input-group select:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0,206,209,0.3);
+    }
+    .btn {
+      background: linear-gradient(to right, #00ced1, #000);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      font-size: 1rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn:hover {
+      opacity: 0.92;
+    }
+    .switch {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    .switch button {
+      background: none;
+      color: #00ced1;
+      border: none;
       cursor: pointer;
     }
-    .hidden { display: none; }
-    .nav-btns { text-align: center; margin-bottom: 1rem; }
-    .nav-btns button { width: 45%; margin: 5px; }
-    .dashboard { padding: 2rem; }
-    .panel { max-width: 700px; margin: auto; }
+    .hidden {
+      display: none !important;
+    }
+    #dashboard {
+      display: none;
+      max-width: 1000px;
+      width: 100%;
+      padding: 2rem;
+      background: #fdfdfd;
+      color: #111;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      border: 1px solid silver;
+    }
+    #registerBox {
+      display: none;
+      background: #ffffff;
+      width: 100%;
+      max-width: 450px;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      text-align: center;
+      border: 2px solid #00ced1;
+      margin-top: 1rem;
+    }
+    .panel button {
+      margin: 0.5rem;
+      padding: 10px 20px;
+      border: none;
+      background: #00ced1;
+      color: #111;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .panel button:hover {
+      background: #20b2aa;
+    }
+    pre {
+      background: #f1f1f1;
+      color: #222;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-top: 1rem;
+      text-align: left;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🚖 MyTaxi System</h1>
+  <div class="title">MyTexi</div>
 
-    <div class="nav-btns">
-      <button onclick="showTab('login')">Login</button>
-      <button onclick="showTab('register')">Register</button>
+  <div class="login-container" id="authBox">
+    <h1 id="formTitle">Login</h1>
+    <div class="input-group">
+      <label for="email">Email</label>
+      <input type="text" id="email" placeholder="Enter email" />
     </div>
-
-    <div id="login" class="tab">
-      <input id="login-email" placeholder="Email">
-      <input id="login-password" type="password" placeholder="Password">
-      <button onclick="login()">Login</button>
+    <div class="input-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter password" />
     </div>
+    <button class="btn" onclick="handleLogin()">Login</button>
+    <div class="switch">
+      <span>Don't have an account?</span>
+      <button onclick="showRegister()">Register</button>
+    </div>
+  </div>
 
-    <div id="register" class="tab hidden">
-      <input id="reg-name" placeholder="Full Name">
-      <input id="reg-email" placeholder="Email">
-      <input id="reg-password" type="password" placeholder="Password">
-      <select id="reg-role">
+  <div id="registerBox">
+    <h1>Register</h1>
+    <div class="input-group">
+      <label for="regEmail">Email</label>
+      <input type="text" id="regEmail" placeholder="Enter email" />
+    </div>
+    <div class="input-group">
+      <label for="regPassword">Password</label>
+      <input type="password" id="regPassword" placeholder="Enter password" />
+    </div>
+    <div class="input-group">
+      <label for="role">Role</label>
+      <select id="role">
         <option value="passenger">Passenger</option>
         <option value="driver">Driver</option>
         <option value="admin">Admin</option>
       </select>
-      <button onclick="register()">Register</button>
     </div>
-
-    <div id="message"></div>
+    <button class="btn" onclick="handleRegister()">Submit Registration</button>
   </div>
 
-  <div id="panel" class="dashboard hidden">
+  <div id="dashboard">
+    <h2>Welcome to the Dashboard</h2>
     <div class="panel">
-      <h2>Welcome, <span id="userRole"></span>!</h2>
-      <div id="passengerPanel" class="hidden">
-        <h3>Passenger Panel</h3>
-        <input id="pickup" placeholder="Pickup">
-        <input id="destination" placeholder="Destination">
-        <button onclick="authPost('/passengers/order', { pickup: pickup.value, destination: destination.value })">Place Order</button>
-        <button onclick="authGet('/passengers/orders')">My Orders</button>
-        <input id="completeOrderId" placeholder="Order ID to complete">
-        <button onclick="authPost(`/passengers/order/${completeOrderId.value}/complete`)">Complete Order</button>
-        <input id="cancelOrderId" placeholder="Order ID to cancel">
-        <button onclick="authDelete(`/passengers/order/${cancelOrderId.value}`)">Cancel Order</button>
-        <input id="driverOrderId" placeholder="Order ID to view driver">
-        <button onclick="authGet(`/passengers/order/${driverOrderId.value}/driver`)">View Driver Info</button>
-        <button onclick="authDelete('/passengers/account')">Delete Account</button>
-      </div>
-
-      <div id="driverPanel" class="hidden">
-        <h3>Driver Panel</h3>
-        <button onclick="authGet('/drivers/orders')">View Orders</button>
-        <input id="acceptOrderId" placeholder="Order ID to accept">
-        <button onclick="authPost('/drivers/accept', { orderId: acceptOrderId.value })">Accept Order</button>
-        <input id="driverCancelId" placeholder="Order ID to cancel">
-        <button onclick="authPost(`/drivers/order/${driverCancelId.value}/cancel`)">Cancel Accepted Order</button>
-        <button onclick="authGet('/drivers/my-orders')">My Accepted Orders</button>
-        <button onclick="authDelete('/drivers/account')">Delete Account</button>
-      </div>
-
-      <div id="adminPanel" class="hidden">
-        <h3>Admin Panel</h3>
-        <button onclick="authGet('/admin/users')">Get All Users</button>
-        <input id="deleteUserId" placeholder="User ID to delete">
-        <button onclick="authDelete(`/admin/users/${deleteUserId.value}`)">Delete User</button>
-        <button onclick="authGet('/admin/orders')">Get All Orders</button>
-      </div>
-
-      <button onclick="logout()">Logout</button>
-      <pre id="result"></pre>
+      <button onclick="alert('View orders')">View Orders</button>
+      <button onclick="alert('Create order')">Create Order</button>
+      <button onclick="location.reload()">Logout</button>
     </div>
   </div>
 
   <script>
-    let token = '', role = '';
-
-    const show = (id) => document.getElementById(id).classList.remove('hidden');
-    const hide = (id) => document.getElementById(id).classList.add('hidden');
-    const msg = (text) => document.getElementById('message').innerText = text;
-
-    function showTab(tab) {
-      ['login', 'register'].forEach(t => hide(t));
-      show(tab);
-      msg('');
+    function showRegister() {
+      document.getElementById('authBox').style.display = 'none';
+      document.getElementById('registerBox').style.display = 'block';
     }
 
-    function showPanel() {
-      document.querySelector('.container').classList.add('hidden');
-      document.getElementById('panel').classList.remove('hidden');
-      document.getElementById('userRole').innerText = role;
-      if (role === 'passenger') show('passengerPanel');
-      if (role === 'driver') show('driverPanel');
-      if (role === 'admin') show('adminPanel');
-    }
+    async function handleLogin() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
 
-    async function register() {
-      const name = reg-name.value, email = reg-email.value, password = reg-password.value, regRole = reg-role.value;
-      const res = await fetch('/auth/register', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role: regRole })
-      });
-      const data = await res.json();
-      msg(data.message || data.error);
-    }
+      if (!email || !password) {
+        alert('Please enter both email and password.');
+        return;
+      }
 
-    async function login() {
-      const email = login-email.value, password = login-password.value;
-      const res = await fetch('/auth/login', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (data.token) {
-        token = data.token;
-        role = JSON.parse(atob(token.split('.')[1])).role;
-        showPanel();
-      } else {
-        msg(data.error);
+      try {
+        const response = await fetch('http://localhost:3000/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.token) {
+          localStorage.setItem('token', data.token);
+          document.getElementById('authBox').style.display = 'none';
+          document.getElementById('registerBox').style.display = 'none';
+          document.getElementById('dashboard').style.display = 'block';
+        } else {
+          alert(data.message || 'Login failed.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('An error occurred while logging in.');
       }
     }
 
-    function logout() {
-      token = ''; role = '';
-      document.getElementById('panel').classList.add('hidden');
-      document.querySelector('.container').classList.remove('hidden');
-      msg('Logged out');
-    }
+    async function handleRegister() {
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value.trim();
+      const role = document.getElementById('role').value;
 
-    async function authGet(url) {
-      const res = await fetch(url, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      document.getElementById('result').innerText = await res.text();
-    }
+      if (!email || !password || !role) {
+        alert('Please fill in all registration fields.');
+        return;
+      }
 
-    async function authPost(url, data = {}) {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify(data)
-      });
-      document.getElementById('result').innerText = await res.text();
-    }
+      try {
+        const response = await fetch('http://localhost:3000/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password, role })
+        });
 
-    async function authDelete(url) {
-      const res = await fetch(url, {
-        method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      document.getElementById('result').innerText = await res.text();
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('Registration successful. You can now login.');
+          document.getElementById('registerBox').style.display = 'none';
+          document.getElementById('authBox').style.display = 'block';
+        } else {
+          alert(data.message || 'Registration failed.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('An error occurred while registering.');
+      }
     }
   </script>
 </body>
