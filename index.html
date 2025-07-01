@@ -6,9 +6,11 @@
   <title>MyTexi - Login</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    /* ——— YOUR CSS ——— */
-    /* No changes from your original design */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
       font-family: 'Poppins', sans-serif;
       height: 100vh;
@@ -125,9 +127,7 @@
       cursor: pointer;
       font-weight: 600;
     }
-    .panel button:hover {
-      background: #20b2aa;
-    }
+    .panel button:hover { background: #20b2aa; }
     pre {
       background: #f1f1f1;
       color: #222;
@@ -142,6 +142,7 @@
 <body>
   <div class="title">MyTexi</div>
 
+  <!-- Login Form -->
   <div class="login-container" id="authBox">
     <h1>Login</h1>
     <div class="input-group">
@@ -159,6 +160,7 @@
     </div>
   </div>
 
+  <!-- Registration Form -->
   <div id="registerBox" style="display: none;">
     <h1>Register</h1>
     <div class="input-group">
@@ -181,6 +183,10 @@
         <option value="admin">Admin</option>
       </select>
     </div>
+    <div class="input-group" id="adminKeyGroup" style="display: none;">
+      <label for="adminKey">Admin Access Key</label>
+      <input type="password" id="adminKey" placeholder="Enter admin key" />
+    </div>
     <button class="btn" onclick="handleRegister()">Submit Registration</button>
     <button class="btn" style="background:#ccc; color:#000;" onclick="showLogin()">Cancel</button>
     <div class="switch">
@@ -189,6 +195,7 @@
     </div>
   </div>
 
+  <!-- Dashboard -->
   <div id="dashboard">
     <h2 id="welcomeMessage">Welcome to the Dashboard</h2>
     <div class="panel">
@@ -208,6 +215,11 @@
       document.getElementById('registerBox').style.display = 'none';
       document.getElementById('authBox').style.display = 'block';
     }
+
+    document.getElementById('role').addEventListener('change', function () {
+      const adminKeyGroup = document.getElementById('adminKeyGroup');
+      adminKeyGroup.style.display = this.value === 'admin' ? 'block' : 'none';
+    });
 
     async function handleLogin() {
       const email = document.getElementById('loginEmail').value.trim();
@@ -229,17 +241,12 @@
 
         if (response.ok && data.token) {
           localStorage.setItem('token', data.token);
-
-          // Decode token (basic JWT decode, not verifying signature)
           const payload = JSON.parse(atob(data.token.split('.')[1]));
           const role = payload.role;
 
           document.getElementById('authBox').style.display = 'none';
           document.getElementById('dashboard').style.display = 'block';
-
-          document.getElementById('welcomeMessage').innerText =
-            `Welcome ${role.charAt(0).toUpperCase() + role.slice(1)}!`;
-
+          document.getElementById('welcomeMessage').innerText = `Welcome ${role.charAt(0).toUpperCase() + role.slice(1)}!`;
         } else {
           alert(data.error || 'Login failed.');
         }
@@ -254,17 +261,21 @@
       const email = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value.trim();
       const role = document.getElementById('role').value;
+      const adminKey = role === 'admin' ? document.getElementById('adminKey').value.trim() : undefined;
 
-      if (!name || !email || !password || !role) {
+      if (!name || !email || !password || !role || (role === 'admin' && !adminKey)) {
         alert('Please fill in all registration fields.');
         return;
       }
+
+      const payload = { name, email, password, role };
+      if (adminKey) payload.adminKey = adminKey;
 
       try {
         const response = await fetch('http://localhost:3000/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, role })
+          body: JSON.stringify(payload)
         });
 
         const data = await response.json();

@@ -60,9 +60,17 @@ start();
 
 // ---------------- AUTH ----------------
 app.post('/auth/register', async (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, adminKey } = req.body;
+
     if (!['passenger', 'driver', 'admin'].includes(role)) {
         return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    if (role === 'admin') {
+        const expectedKey = process.env.ADMIN_KEY;
+        if (!adminKey || adminKey !== expectedKey) {
+            return res.status(403).json({ error: 'Invalid admin access key' });
+        }
     }
 
     try {
@@ -71,11 +79,14 @@ app.post('/auth/register', async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const result = await db.collection('users').insertOne({ name, email, password: hashedPassword, role });
+
         res.status(201).json({ message: 'User registered successfully', id: result.insertedId });
-    } catch {
+    } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Registration failed' });
     }
 });
+
 
 app.post('/auth/login', async (req, res) => {
     const { email, password } = req.body;
