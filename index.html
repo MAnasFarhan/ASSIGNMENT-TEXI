@@ -40,7 +40,7 @@
     .title:hover {
       transform: scale(1.05);
     }
-    .login-container {
+    .login-container, #registerBox {
       background: #ffffff;
       width: 100%;
       max-width: 450px;
@@ -124,18 +124,6 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.15);
       border: 1px solid silver;
     }
-    #registerBox {
-      display: none;
-      background: #ffffff;
-      width: 100%;
-      max-width: 450px;
-      padding: 2rem;
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-      text-align: center;
-      border: 2px solid #00ced1;
-      margin-top: 1rem;
-    }
     .panel button {
       margin: 0.5rem;
       padding: 10px 20px;
@@ -164,14 +152,14 @@
   <div class="title">MyTexi</div>
 
   <div class="login-container" id="authBox">
-    <h1 id="formTitle">Login</h1>
+    <h1>Login</h1>
     <div class="input-group">
-      <label for="email">Email</label>
-      <input type="text" id="email" placeholder="Enter email" />
+      <label for="loginEmail">Email</label>
+      <input type="text" id="loginEmail" placeholder="Enter email" />
     </div>
     <div class="input-group">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Enter password" />
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password" />
     </div>
     <button class="btn" onclick="handleLogin()">Login</button>
     <div class="switch">
@@ -180,8 +168,12 @@
     </div>
   </div>
 
-  <div id="registerBox">
+  <div id="registerBox" style="display: none;">
     <h1>Register</h1>
+    <div class="input-group">
+      <label for="fullName">Full Name</label>
+      <input type="text" id="fullName" placeholder="Enter full name" />
+    </div>
     <div class="input-group">
       <label for="regEmail">Email</label>
       <input type="text" id="regEmail" placeholder="Enter email" />
@@ -199,6 +191,11 @@
       </select>
     </div>
     <button class="btn" onclick="handleRegister()">Submit Registration</button>
+    <button class="btn" style="background:#ccc; color:#000;" onclick="showLogin()">Cancel</button>
+    <div class="switch">
+      <span>Already have an account?</span>
+      <button onclick="showLogin()">Login</button>
+    </div>
   </div>
 
   <div id="dashboard">
@@ -216,9 +213,14 @@
       document.getElementById('registerBox').style.display = 'block';
     }
 
+    function showLogin() {
+      document.getElementById('registerBox').style.display = 'none';
+      document.getElementById('authBox').style.display = 'block';
+    }
+
     async function handleLogin() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
 
       if (!email || !password) {
         alert('Please enter both email and password.');
@@ -239,23 +241,23 @@
         if (response.ok && data.token) {
           localStorage.setItem('token', data.token);
           document.getElementById('authBox').style.display = 'none';
-          document.getElementById('registerBox').style.display = 'none';
           document.getElementById('dashboard').style.display = 'block';
         } else {
           alert(data.message || 'Login failed.');
         }
       } catch (err) {
-        console.error(err);
+        console.error('Login error:', err);
         alert('An error occurred while logging in.');
       }
     }
 
     async function handleRegister() {
+      const fullName = document.getElementById('fullName').value.trim();
       const email = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value.trim();
       const role = document.getElementById('role').value;
 
-      if (!email || !password || !role) {
+      if (!fullName || !email || !password || !role) {
         alert('Please fill in all registration fields.');
         return;
       }
@@ -266,20 +268,19 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ email, password, role })
+          body: JSON.stringify({ fullName, email, password, role })
         });
 
         const data = await response.json();
 
-        if (response.ok) {
+        if (response.ok && data.success) {
           alert('Registration successful. You can now login.');
-          document.getElementById('registerBox').style.display = 'none';
-          document.getElementById('authBox').style.display = 'block';
+          showLogin();
         } else {
           alert(data.message || 'Registration failed.');
         }
       } catch (err) {
-        console.error(err);
+        console.error('Registration error:', err);
         alert('An error occurred while registering.');
       }
     }
