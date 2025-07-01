@@ -6,11 +6,7 @@
   <title>MyTexi - Login</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Poppins', sans-serif;
       height: 100vh;
@@ -53,7 +49,7 @@
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    h1, h2 {
+    h1, h2, h3 {
       font-size: 1.8rem;
       margin-bottom: 1rem;
       color: #333;
@@ -78,11 +74,6 @@
       font-size: 1rem;
       border: 1px solid #ccc;
     }
-    .input-group input:focus,
-    .input-group select:focus {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(0,206,209,0.3);
-    }
     .btn {
       background: linear-gradient(to right, #00ced1, #000);
       color: #fff;
@@ -95,7 +86,6 @@
       cursor: pointer;
       font-weight: 600;
     }
-    .btn:hover { opacity: 0.92; }
     .switch {
       margin-top: 1rem;
       font-size: 0.9rem;
@@ -128,30 +118,21 @@
       font-weight: 600;
     }
     .panel button:hover { background: #20b2aa; }
-    pre {
-      background: #f1f1f1;
-      color: #222;
-      padding: 1rem;
-      border-radius: 10px;
-      margin-top: 1rem;
-      text-align: left;
-      white-space: pre-wrap;
-    }
   </style>
 </head>
 <body>
   <div class="title">MyTexi</div>
 
-  <!-- Login Form -->
+  <!-- Login Box -->
   <div class="login-container" id="authBox">
     <h1>Login</h1>
     <div class="input-group">
       <label for="loginEmail">Email</label>
-      <input type="text" id="loginEmail" placeholder="Enter email" />
+      <input type="text" id="loginEmail" />
     </div>
     <div class="input-group">
       <label for="loginPassword">Password</label>
-      <input type="password" id="loginPassword" placeholder="Enter password" />
+      <input type="password" id="loginPassword" />
     </div>
     <button class="btn" onclick="handleLogin()">Login</button>
     <div class="switch">
@@ -160,20 +141,20 @@
     </div>
   </div>
 
-  <!-- Registration Form -->
+  <!-- Register Box -->
   <div id="registerBox" style="display: none;">
     <h1>Register</h1>
     <div class="input-group">
       <label for="fullName">Full Name</label>
-      <input type="text" id="fullName" placeholder="Enter full name" />
+      <input type="text" id="fullName" />
     </div>
     <div class="input-group">
       <label for="regEmail">Email</label>
-      <input type="text" id="regEmail" placeholder="Enter email" />
+      <input type="text" id="regEmail" />
     </div>
     <div class="input-group">
       <label for="regPassword">Password</label>
-      <input type="password" id="regPassword" placeholder="Enter password" />
+      <input type="password" id="regPassword" />
     </div>
     <div class="input-group">
       <label for="role">Role</label>
@@ -184,28 +165,156 @@
       </select>
     </div>
     <div class="input-group" id="adminKeyGroup" style="display: none;">
-      <label for="adminKey">Admin Access Key</label>
-      <input type="password" id="adminKey" placeholder="Enter admin key" />
+      <label for="adminKey">Admin Key</label>
+      <input type="password" id="adminKey" />
     </div>
     <button class="btn" onclick="handleRegister()">Submit Registration</button>
-    <button class="btn" style="background:#ccc; color:#000;" onclick="showLogin()">Cancel</button>
+    <button class="btn" onclick="showLogin()" style="background: #ccc; color: #000;">Cancel</button>
     <div class="switch">
       <span>Already have an account?</span>
       <button onclick="showLogin()">Login</button>
     </div>
   </div>
 
-  <!-- Dashboard -->
+  <!-- Passenger Dashboard -->
   <div id="dashboard">
-    <h2 id="welcomeMessage">Welcome to the Dashboard</h2>
+    <h2 id="welcomeMessage">Welcome, Passenger!</h2>
     <div class="panel">
-      <button onclick="alert('View orders')">View Orders</button>
-      <button onclick="alert('Create order')">Create Order</button>
-      <button onclick="location.reload()">Logout</button>
+      <button onclick="toggleCreateOrderForm()">Create Order</button>
+      <button onclick="toggleOrdersList()">View My Orders</button>
+      <button onclick="handleLogout()">Logout</button>
     </div>
+
+    <div id="createOrderForm" style="display: none; margin-top: 2rem;">
+      <h3>Create New Ride</h3>
+      <div class="input-group"><label>Date</label><input id="orderDate" type="date" /></div>
+      <div class="input-group">
+        <label for="pickup">Pickup</label>
+        <select id="pickup" onchange="autoCalculatePayment()">
+          <option value="">Select</option>
+          <option value="utem-lestari">UTeM Lestari</option>
+          <option value="utem-satria">UTeM Satria</option>
+          <option value="melaka sentral">Melaka Sentral</option>
+          <option value="mitc">MITC</option>
+          <option value="melaka mall">Melaka Mall</option>
+          <option value="mydin">Mydin</option>
+          <option value="aeon ayer keroh">Aeon Ayer Keroh</option>
+          <option value="lotus cheng">Lotus Cheng</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="destination">Destination</label>
+        <select id="destination" onchange="autoCalculatePayment()">
+          <option value="">Select</option>
+          <option value="utem-lestari">UTeM Lestari</option>
+          <option value="utem-satria">UTeM Satria</option>
+          <option value="melaka sentral">Melaka Sentral</option>
+          <option value="mitc">MITC</option>
+          <option value="melaka mall">Melaka Mall</option>
+          <option value="mydin">Mydin</option>
+          <option value="aeon ayer keroh">Aeon Ayer Keroh</option>
+          <option value="lotus cheng">Lotus Cheng</option>
+        </select>
+      </div>
+      <div class="input-group"><label>Time</label><input id="timeOrder" type="text" /></div>
+      <div class="input-group"><label>Phone</label><input id="phoneNumber" type="text" /></div>
+      <div class="input-group"><label>Payment (RM)</label><input id="payment" readonly /></div>
+      <button class="btn" onclick="submitOrder()">Submit Order</button>
+    </div>
+        <div id="ordersList" style="margin-top: 2rem;"></div>
   </div>
 
   <script>
+    
+ const fareTable = {
+  "utem-lestari|melaka sentral": 15,
+  "melaka sentral|utem-lestari": 15,
+
+  "utem-lestari|utem-satria": 4,
+  "utem-satria|utem-lestari": 4,
+
+  "utem-lestari|mitc": 7.5,
+  "mitc|utem-lestari": 7.5,
+
+  "utem-lestari|mydin": 7.5,
+  "mydin|utem-lestari": 7.5,
+
+  "utem-lestari|melaka mall": 11,
+  "melaka mall|utem-lestari": 11,
+
+  "utem-lestari|aeon ayer keroh": 12,
+  "aeon ayer keroh|utem-lestari": 12,
+
+  "utem-lestari|lotus cheng": 14,
+  "lotus cheng|utem-lestari": 14,
+
+  "utem-satria|melaka sentral": 15,
+  "melaka sentral|utem-satria": 15,
+
+  "utem-satria|mitc": 7.5,
+  "mitc|utem-satria": 7.5,
+
+  "utem-satria|mydin": 7.5,
+  "mydin|utem-satria": 7.5,
+
+  "utem-satria|melaka mall": 11,
+  "melaka mall|utem-satria": 11,
+
+  "utem-satria|aeon ayer keroh": 12,
+  "aeon ayer keroh|utem-satria": 12,
+
+  "utem-satria|lotus cheng": 14,
+  "lotus cheng|utem-satria": 14,
+
+  "melaka sentral|mitc": 9,
+  "mitc|melaka sentral": 9,
+
+  "melaka sentral|melaka mall": 4.5,
+  "melaka mall|melaka sentral": 4.5,
+
+  "melaka sentral|mydin": 9,
+  "mydin|melaka sentral": 9,
+
+  "melaka sentral|aeon ayer keroh": 4.5,
+  "aeon ayer keroh|melaka sentral": 4.5,
+
+    "melaka sentral|lotus cheng": 11,
+    "lotus cheng|melaka sentral": 11,
+
+    "mitc|melaka mall": 5,
+    "melaka mall|mitc": 5,
+
+    "mitc|mydin": 4,
+    "mydin|mitc": 4,
+
+    "mitc|aeon ayer keroh": 5.5,
+    "aeon ayer keroh|mitc": 5.5,
+
+    "mitc|lotus cheng": 9.5,
+    "lotus cheng|mitc": 9.5,
+
+    "melaka mall|mydin": 5,
+    "mydin|melaka mall": 5,
+
+    "melaka mall|aeon ayer keroh": 4,
+    "aeon ayer keroh|melaka mall": 4,
+
+    "melaka mall|lotus cheng": 11,
+    "lotus cheng|melaka mall": 11,
+
+    "mydin|aeon ayer keroh": 6,
+    "aeon ayer keroh|mydin": 6,
+
+    "mydin|lotus cheng": 10,
+    "lotus cheng|mydin": 10,
+
+    "aeon ayer keroh|lotus cheng": 14,
+    "lotus cheng|aeon ayer keroh": 14
+
+};
+
+
+
     function showRegister() {
       document.getElementById('authBox').style.display = 'none';
       document.getElementById('registerBox').style.display = 'block';
@@ -216,43 +325,34 @@
       document.getElementById('authBox').style.display = 'block';
     }
 
+    function handleLogout() {
+      localStorage.removeItem('token');
+      location.reload();
+    }
+
     document.getElementById('role').addEventListener('change', function () {
-      const adminKeyGroup = document.getElementById('adminKeyGroup');
-      adminKeyGroup.style.display = this.value === 'admin' ? 'block' : 'none';
+      document.getElementById('adminKeyGroup').style.display = this.value === 'admin' ? 'block' : 'none';
     });
 
     async function handleLogin() {
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
-
-      if (!email || !password) {
-        alert('Please enter both email and password.');
-        return;
-      }
+      if (!email || !password) return alert('Please enter both email and password.');
 
       try {
-        const response = await fetch('http://localhost:3000/auth/login', {
+        const res = await fetch('http://localhost:3000/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
 
-        const data = await response.json();
-
-        if (response.ok && data.token) {
+        const data = await res.json();
+        if (res.ok && data.token) {
           localStorage.setItem('token', data.token);
-          const payload = JSON.parse(atob(data.token.split('.')[1]));
-          const role = payload.role;
-
-          document.getElementById('authBox').style.display = 'none';
-          document.getElementById('dashboard').style.display = 'block';
-          document.getElementById('welcomeMessage').innerText = `Welcome ${role.charAt(0).toUpperCase() + role.slice(1)}!`;
-        } else {
-          alert(data.error || 'Login failed.');
-        }
-      } catch (err) {
-        console.error('Login error:', err);
-        alert('An error occurred while logging in.');
+          loadProfile();
+        } else alert(data.error || 'Login failed.');
+      } catch {
+        alert('Login error.');
       }
     }
 
@@ -262,9 +362,8 @@
       const password = document.getElementById('regPassword').value.trim();
       const role = document.getElementById('role').value;
       const adminKey = role === 'admin' ? document.getElementById('adminKey').value.trim() : undefined;
-
       if (!name || !email || !password || !role || (role === 'admin' && !adminKey)) {
-        alert('Please fill in all registration fields.');
+        alert('All fields are required.');
         return;
       }
 
@@ -272,25 +371,159 @@
       if (adminKey) payload.adminKey = adminKey;
 
       try {
-        const response = await fetch('http://localhost:3000/auth/register', {
+        const res = await fetch('http://localhost:3000/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-
-        const data = await response.json();
-
-        if (response.ok) {
+        const data = await res.json();
+        if (res.ok) {
           alert('Registration successful. You can now login.');
           showLogin();
-        } else {
-          alert(data.error || 'Registration failed.');
-        }
-      } catch (err) {
-        console.error('Registration error:', err);
-        alert('An error occurred while registering.');
+        } else alert(data.error || 'Registration failed.');
+      } catch {
+        alert('Registration error.');
       }
     }
+
+    async function loadProfile() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const res = await fetch('http://localhost:3000/auth/profile', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('authBox').style.display = 'none';
+          document.getElementById('registerBox').style.display = 'none';
+          document.getElementById('dashboard').style.display = 'block';
+          document.getElementById('welcomeMessage').innerText = `Welcome, ${data.name}!`;
+        }
+      } catch {
+        alert('Failed to load profile.');
+      }
+    }
+
+    function toggleCreateOrderForm() {
+      const form = document.getElementById('createOrderForm');
+      const orders = document.getElementById('ordersList');
+      orders.innerHTML = '';
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function toggleOrdersList() {
+      const form = document.getElementById('createOrderForm');
+      const orders = document.getElementById('ordersList');
+      form.style.display = 'none';
+      if (orders.innerHTML.trim() !== '') {
+        orders.innerHTML = '';
+      } else {
+        loadOrders();
+      }
+    }
+
+    function autoCalculatePayment() {
+      const pickup = document.getElementById('pickup').value;
+      const destination = document.getElementById('destination').value;
+      const key = `${pickup}|${destination}`;
+      const fare = fareTable[key] || '';
+      document.getElementById('payment').value = fare;
+    }
+
+    async function submitOrder() {
+      const token = localStorage.getItem('token');
+      const date = document.getElementById('orderDate').value.trim();
+      const pickup = document.getElementById('pickup').value.trim();
+      const destination = document.getElementById('destination').value.trim();
+      const timeOrder = document.getElementById('timeOrder').value.trim();
+      const phoneNumber = document.getElementById('phoneNumber').value.trim();
+      const payment = document.getElementById('payment').value.trim();
+
+      if (!pickup || !destination || !timeOrder || !phoneNumber || !payment || !date) {
+        alert('Please fill in all fields.');
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:3000/passengers/order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ pickupLocation: pickup, destination, timeOrder, phoneNumber, payment, date })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('Order created!');
+          document.getElementById('createOrderForm').style.display = 'none';
+          loadOrders();
+        } else alert(data.error || 'Error creating order.');
+      } catch (err) {
+        alert('Order creation error.');
+      }
+    }
+
+    async function loadOrders() {
+      const token = localStorage.getItem('token');
+      const ordersBox = document.getElementById('ordersList');
+      ordersBox.innerHTML = 'Loading...';
+
+      try {
+        const res = await fetch('http://localhost:3000/passengers/orders', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const orders = await res.json();
+        let html = '<h3>Your Orders</h3>';
+        if (!orders.length) html += '<p>No orders found.</p>';
+        else {
+          html += '<ul style="list-style:none;">';
+          orders.forEach(o => {
+            html += `<li style="background:#eee; padding:10px; border-radius:10px; margin-bottom:10px;">
+              <strong>Date:</strong> ${o.date || 'N/A'}<br>
+              <strong>From:</strong> ${o.pickupLocation}<br>
+              <strong>To:</strong> ${o.destination}<br>
+              <strong>Status:</strong> ${o.status}<br>
+              <strong>Time:</strong> ${o.timeOrder}<br>
+              <strong>Payment:</strong> RM${o.payment}<br>`;
+            if (o.status === 'pending') {
+              html += `<button onclick="cancelOrder('${o._id}')">Cancel</button>`;
+            }
+            html += '</li>';
+          });
+          html += '</ul>';
+        }
+        ordersBox.innerHTML = html;
+      } catch {
+        ordersBox.innerHTML = 'Error loading orders.';
+      }
+    }
+
+    async function cancelOrder(id) {
+      const token = localStorage.getItem('token');
+      if (!confirm('Cancel this order?')) return;
+      try {
+        const res = await fetch(`http://localhost:3000/passengers/order/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (res.ok) {
+          alert('Order cancelled.');
+          loadOrders();
+        } else {
+          const data = await res.json();
+          alert(data.error || 'Failed to cancel order.');
+        }
+      } catch {
+        alert('Cancel error.');
+      }
+    }
+
+    // Auto load profile if token is present
+    window.onload = loadProfile;
   </script>
 </body>
 </html>
+

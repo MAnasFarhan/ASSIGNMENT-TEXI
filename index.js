@@ -108,17 +108,127 @@ app.post('/auth/login', async (req, res) => {
 });
 
 // ---------------- PASSENGER ----------------
+// ... [Previous setup code remains unchanged] ...
+
 app.post('/passengers/order', authenticate, authorize(['passenger']), async (req, res) => {
-    try {
-        const order = { ...req.body, userId: req.user.id.toString(), status: 'pending' };
-        const result = await db.collection('orders').insertOne(order);
-        res.status(201).json({ id: result.insertedId });
-    } catch (err) {
-        console.error(err); // Log to console
-        res.status(400).json({ error: 'Failed to create order', details: err.message });
+  const fareTable = {
+  "utem-lestari|melaka sentral": 15,
+  "melaka sentral|utem-lestari": 15,
+
+  "utem-lestari|utem-satria": 4,
+  "utem-satria|utem-lestari": 4,
+
+  "utem-lestari|mitc": 7.5,
+  "mitc|utem-lestari": 7.5,
+
+  "utem-lestari|mydin": 7.5,
+  "mydin|utem-lestari": 7.5,
+
+  "utem-lestari|melaka mall": 11,
+  "melaka mall|utem-lestari": 11,
+
+  "utem-lestari|aeon ayer keroh": 12,
+  "aeon ayer keroh|utem-lestari": 12,
+
+  "utem-lestari|lotus cheng": 14,
+  "lotus cheng|utem-lestari": 14,
+
+  "utem-satria|melaka sentral": 15,
+  "melaka sentral|utem-satria": 15,
+
+  "utem-satria|mitc": 7.5,
+  "mitc|utem-satria": 7.5,
+
+  "utem-satria|mydin": 7.5,
+  "mydin|utem-satria": 7.5,
+
+  "utem-satria|melaka mall": 11,
+  "melaka mall|utem-satria": 11,
+
+  "utem-satria|aeon ayer keroh": 12,
+  "aeon ayer keroh|utem-satria": 12,
+
+  "utem-satria|lotus cheng": 14,
+  "lotus cheng|utem-satria": 14,
+
+  "melaka sentral|mitc": 9,
+  "mitc|melaka sentral": 9,
+
+  "melaka sentral|melaka mall": 4.5,
+  "melaka mall|melaka sentral": 4.5,
+
+  "melaka sentral|mydin": 9,
+  "mydin|melaka sentral": 9,
+
+  "melaka sentral|aeon ayer keroh": 4.5,
+  "aeon ayer keroh|melaka sentral": 4.5,
+
+    "melaka sentral|lotus cheng": 11,
+    "lotus cheng|melaka sentral": 11,
+
+    "mitc|melaka mall": 5,
+    "melaka mall|mitc": 5,
+
+    "mitc|mydin": 4,
+    "mydin|mitc": 4,
+
+    "mitc|aeon ayer keroh": 5.5,
+    "aeon ayer keroh|mitc": 5.5,
+
+    "mitc|lotus cheng": 9.5,
+    "lotus cheng|mitc": 9.5,
+
+    "melaka mall|mydin": 5,
+    "mydin|melaka mall": 5,
+
+    "melaka mall|aeon ayer keroh": 4,
+    "aeon ayer keroh|melaka mall": 4,
+
+    "melaka mall|lotus cheng": 11,
+    "lotus cheng|melaka mall": 11,
+
+    "mydin|aeon ayer keroh": 6,
+    "aeon ayer keroh|mydin": 6,
+
+    "mydin|lotus cheng": 10,
+    "lotus cheng|mydin": 10,
+
+    "aeon ayer keroh|lotus cheng": 14,
+    "lotus cheng|aeon ayer keroh": 14
+
+};
+
+
+  try {
+    const { pickupLocation, destination, timeOrder, phoneNumber, payment, date } = req.body;
+    const key = `${pickupLocation}|${destination}`;
+    const expected = fareTable[key];
+
+    if (!expected || Number(payment) !== expected) {
+      return res.status(400).json({ error: 'Invalid route or incorrect payment' });
     }
 
+    const order = {
+      pickupLocation,
+      destination,
+      timeOrder,
+      phoneNumber,
+      payment: expected,
+      date,
+      userId: req.user.id,
+      status: 'pending'
+    };
+
+    const result = await db.collection('orders').insertOne(order);
+    res.status(201).json({ id: result.insertedId });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Failed to create order', details: err.message });
+  }
 });
+
+// ... [Remaining routes unchanged] ...
+
 
 app.get('/passengers/orders', authenticate, authorize(['passenger']), async (req, res) => {
     try {
@@ -348,4 +458,15 @@ app.get('/admin/orders', authenticate, authorize(['admin']), async (req, res) =>
     }
 });
 
-
+app.get('/auth/profile', authenticate, async (req, res) => {
+  try {
+    const user = await db.collection('users').findOne(
+      { _id: new ObjectId(req.user.id) },
+      { projection: { name: 1 } }
+    );
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ name: user.name });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch profile' });
+  }
+});
