@@ -470,3 +470,5 @@ app.get('/auth/profile', authenticate, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch profile' });
   }
 });
+
+
