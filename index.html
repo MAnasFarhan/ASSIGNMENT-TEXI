@@ -3,130 +3,76 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taxi Booking API</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"/>
+  <title>Taxi Booking App</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <style>
-    :root {
-      --silver: #C0C0C0;
-      --gold: #D4AF37;
-      --dark: #1e1e1e;
-      --white: #ffffff;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(to bottom right, var(--silver), var(--gold));
-      color: var(--dark);
-      min-height: 100vh;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+      font-family: 'Segoe UI', sans-serif;
     }
 
-    h1 {
-      font-size: 2.5rem;
-      color: var(--dark);
-      margin-bottom: 1rem;
+    .gold {
+      background: linear-gradient(to right, #f9d423, #ff4e50);
+      color: white;
     }
 
-    .section {
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 15px;
-      padding: 2rem;
-      max-width: 800px;
-      width: 100%;
-      margin-bottom: 2rem;
+    .silver {
+      background: linear-gradient(to right, #bdc3c7, #2c3e50);
+      color: white;
+    }
+
+    .card {
+      border: none;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     }
 
-    .section h2 {
-      color: var(--gold);
-      margin-bottom: 1rem;
+    .btn-gold {
+      background-color: #f1c40f;
+      color: #fff;
     }
 
-    ul {
-      list-style-type: none;
-      padding-left: 1rem;
+    .btn-silver {
+      background-color: #95a5a6;
+      color: #fff;
     }
 
-    ul li {
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .footer {
-      margin-top: auto;
-      font-size: 0.9rem;
-      color: var(--dark);
-      opacity: 0.8;
-    }
-
-    .highlight {
-      color: var(--gold);
-      font-weight: bold;
-    }
-
-    code {
-      background: #f4f4f4;
-      padding: 0.2rem 0.5rem;
-      border-radius: 5px;
-      font-size: 0.95rem;
+    .role-select {
+      margin-top: 10px;
     }
   </style>
 </head>
-<body>
-  <h1>🚖 Taxi Booking API Dashboard</h1>
+<body class="d-flex justify-content-center align-items-center vh-100">
 
-  <div class="section">
-    <h2>🧩 Authentication</h2>
-    <ul>
-      <li><span class="highlight">POST</span> <code>/auth/register</code> – Register as passenger, driver, or admin</li>
-      <li><span class="highlight">POST</span> <code>/auth/login</code> – Login and get JWT token</li>
-    </ul>
-  </div>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card p-4 silver">
+          <h2 class="text-center mb-3">Taxi Booking App</h2>
 
-  <div class="section">
-    <h2>👤 Passenger Endpoints</h2>
-    <ul>
-      <li><span class="highlight">POST</span> <code>/passengers/order</code> – Request a ride</li>
-      <li><span class="highlight">GET</span> <code>/passengers/orders</code> – View your orders</li>
-      <li><span class="highlight">DELETE</span> <code>/passengers/order/:id</code> – Cancel your pending order</li>
-      <li><span class="highlight">POST</span> <code>/passengers/order/:id/complete</code> – Mark ride as completed</li>
-      <li><span class="highlight">GET</span> <code>/passengers/order/:id/driver</code> – View assigned driver info</li>
-      <li><span class="highlight">DELETE</span> <code>/passengers/account</code> – Delete passenger account</li>
-    </ul>
-  </div>
+          <div id="form-switch" class="text-center mb-3">
+            <button class="btn btn-gold me-2" onclick="showLogin()">Login</button>
+            <button class="btn btn-silver" onclick="showRegister()">Register</button>
+          </div>
 
-  <div class="section">
-    <h2>🚗 Driver Endpoints</h2>
-    <ul>
-      <li><span class="highlight">GET</span> <code>/drivers/orders</code> – View pending orders</li>
-      <li><span class="highlight">POST</span> <code>/drivers/accept</code> – Accept a ride</li>
-      <li><span class="highlight">POST</span> <code>/drivers/order/:id/cancel</code> – Cancel accepted ride</li>
-      <li><span class="highlight">GET</span> <code>/drivers/my-orders</code> – View your accepted orders</li>
-      <li><span class="highlight">PUT</span> <code>/drivers/profile</code> – Update your profile</li>
-      <li><span class="highlight">DELETE</span> <code>/drivers/account</code> – Delete driver account</li>
-    </ul>
-  </div>
+          <!-- Login Form -->
+          <form id="login-form" onsubmit="login(event)">
+            <div class="mb-3">
+              <input type="email" class="form-control" id="login-email" placeholder="Email" required />
+            </div>
+            <div class="mb-3">
+              <input type="password" class="form-control" id="login-password" placeholder="Password" required />
+            </div>
+            <button type="submit" class="btn btn-gold w-100">Login</button>
+          </form>
 
-  <div class="section">
-    <h2>🛠️ Admin Endpoints</h2>
-    <ul>
-      <li><span class="highlight">GET</span> <code>/admin/users</code> – View all users</li>
-      <li><span class="highlight">DELETE</span> <code>/admin/users/:id</code> – Delete user</li>
-      <li><span class="highlight">GET</span> <code>/admin/orders</code> – View all orders</li>
-    </ul>
-  </div>
-
-  <div class="footer">
-    Developed by <strong>Anas Farhan</strong> | Assignment-TEXI1 © 2025
-  </div>
-</body>
-</html>
+          <!-- Register Form -->
+          <form id="register-form" onsubmit="register(event)" style="display: none;">
+            <div class="mb-3">
+              <input type="text" class="form-control" id="reg-name" placeholder="Full Name" required />
+            </div>
+            <div class="mb-3">
+              <input type="email" class="form-control" id="reg-email" placeholder="Email" required />
+            </div>
+            <div class="mb-3">
+              <input type="password" class="form-control" id="reg-password" placeholder="Password" required />
+            </div>
