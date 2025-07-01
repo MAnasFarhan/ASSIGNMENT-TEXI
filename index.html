@@ -1,78 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Taxi Booking App</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyTaxi Login/Register</title>
   <style>
     body {
-      background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
       font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #f3f3f3, #ffe680);
+      margin: 0;
+      padding: 0;
     }
-
-    .gold {
-      background: linear-gradient(to right, #f9d423, #ff4e50);
-      color: white;
+    .container {
+      max-width: 500px;
+      margin: 5% auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
-
-    .silver {
-      background: linear-gradient(to right, #bdc3c7, #2c3e50);
-      color: white;
+    h1 {
+      text-align: center;
+      color: #d4af37;
     }
-
-    .card {
-      border: none;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    input, select, button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
-
-    .btn-gold {
-      background-color: #f1c40f;
-      color: #fff;
+    button {
+      background: linear-gradient(to right, gold, silver);
+      font-weight: bold;
+      cursor: pointer;
     }
-
-    .btn-silver {
-      background-color: #95a5a6;
-      color: #fff;
-    }
-
-    .role-select {
-      margin-top: 10px;
-    }
+    .hidden { display: none; }
+    .nav-btns { text-align: center; margin-bottom: 1rem; }
+    .nav-btns button { width: 45%; margin: 5px; }
+    .dashboard { padding: 2rem; }
+    .panel { max-width: 700px; margin: auto; }
   </style>
 </head>
-<body class="d-flex justify-content-center align-items-center vh-100">
-
+<body>
   <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card p-4 silver">
-          <h2 class="text-center mb-3">Taxi Booking App</h2>
+    <h1>🚖 MyTaxi System</h1>
 
-          <div id="form-switch" class="text-center mb-3">
-            <button class="btn btn-gold me-2" onclick="showLogin()">Login</button>
-            <button class="btn btn-silver" onclick="showRegister()">Register</button>
-          </div>
+    <div class="nav-btns">
+      <button onclick="showTab('login')">Login</button>
+      <button onclick="showTab('register')">Register</button>
+    </div>
 
-          <!-- Login Form -->
-          <form id="login-form" onsubmit="login(event)">
-            <div class="mb-3">
-              <input type="email" class="form-control" id="login-email" placeholder="Email" required />
-            </div>
-            <div class="mb-3">
-              <input type="password" class="form-control" id="login-password" placeholder="Password" required />
-            </div>
-            <button type="submit" class="btn btn-gold w-100">Login</button>
-          </form>
+    <div id="login" class="tab">
+      <input id="login-email" placeholder="Email">
+      <input id="login-password" type="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+    </div>
 
-          <!-- Register Form -->
-          <form id="register-form" onsubmit="register(event)" style="display: none;">
-            <div class="mb-3">
-              <input type="text" class="form-control" id="reg-name" placeholder="Full Name" required />
-            </div>
-            <div class="mb-3">
-              <input type="email" class="form-control" id="reg-email" placeholder="Email" required />
-            </div>
-            <div class="mb-3">
-              <input type="password" class="form-control" id="reg-password" placeholder="Password" required />
-            </div>
+    <div id="register" class="tab hidden">
+      <input id="reg-name" placeholder="Full Name">
+      <input id="reg-email" placeholder="Email">
+      <input id="reg-password" type="password" placeholder="Password">
+      <select id="reg-role">
+        <option value="passenger">Passenger</option>
+        <option value="driver">Driver</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button onclick="register()">Register</button>
+    </div>
+
+    <div id="message"></div>
+  </div>
+
+  <div id="panel" class="dashboard hidden">
+    <div class="panel">
+      <h2>Welcome, <span id="userRole"></span>!</h2>
+      <div id="passengerPanel" class="hidden">
+        <h3>Passenger Panel</h3>
+        <input id="pickup" placeholder="Pickup">
+        <input id="destination" placeholder="Destination">
+        <button onclick="authPost('/passengers/order', { pickup: pickup.value, destination: destination.value })">Place Order</button>
+        <button onclick="authGet('/passengers/orders')">My Orders</button>
+        <input id="completeOrderId" placeholder="Order ID to complete">
+        <button onclick="authPost(`/passengers/order/${completeOrderId.value}/complete`)">Complete Order</button>
+        <input id="cancelOrderId" placeholder="Order ID to cancel">
+        <button onclick="authDelete(`/passengers/order/${cancelOrderId.value}`)">Cancel Order</button>
+        <input id="driverOrderId" placeholder="Order ID to view driver">
+        <button onclick="authGet(`/passengers/order/${driverOrderId.value}/driver`)">View Driver Info</button>
+        <button onclick="authDelete('/passengers/account')">Delete Account</button>
+      </div>
+
+      <div id="driverPanel" class="hidden">
+        <h3>Driver Panel</h3>
+        <button onclick="authGet('/drivers/orders')">View Orders</button>
+        <input id="acceptOrderId" placeholder="Order ID to accept">
+        <button onclick="authPost('/drivers/accept', { orderId: acceptOrderId.value })">Accept Order</button>
+        <input id="driverCancelId" placeholder="Order ID to cancel">
+        <button onclick="authPost(`/drivers/order/${driverCancelId.value}/cancel`)">Cancel Accepted Order</button>
+        <button onclick="authGet('/drivers/my-orders')">My Accepted Orders</button>
+        <button onclick="authDelete('/drivers/account')">Delete Account</button>
+      </div>
+
+      <div id="adminPanel" class="hidden">
+        <h3>Admin Panel</h3>
+        <button onclick="authGet('/admin/users')">Get All Users</button>
+        <input id="deleteUserId" placeholder="User ID to delete">
+        <button onclick="authDelete(`/admin/users/${deleteUserId.value}`)">Delete User</button>
+        <button onclick="authGet('/admin/orders')">Get All Orders</button>
+      </div>
+
+      <button onclick="logout()">Logout</button>
+      <pre id="result"></pre>
+    </div>
+  </div>
+
+  <script>
+    let token = '', role = '';
+
+    const show = (id) => document.getElementById(id).classList.remove('hidden');
+    const hide = (id) => document.getElementById(id).classList.add('hidden');
+    const msg = (text) => document.getElementById('message').innerText = text;
+
+    function showTab(tab) {
+      ['login', 'register'].forEach(t => hide(t));
+      show(tab);
+      msg('');
+    }
+
+    function showPanel() {
+      document.querySelector('.container').classList.add('hidden');
+      document.getElementById('panel').classList.remove('hidden');
+      document.getElementById('userRole').innerText = role;
+      if (role === 'passenger') show('passengerPanel');
+      if (role === 'driver') show('driverPanel');
+      if (role === 'admin') show('adminPanel');
+    }
+
+    async function register() {
+      const name = reg-name.value, email = reg-email.value, password = reg-password.value, regRole = reg-role.value;
+      const res = await fetch('/auth/register', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role: regRole })
+      });
+      const data = await res.json();
+      msg(data.message || data.error);
+    }
+
+    async function login() {
+      const email = login-email.value, password = login-password.value;
+      const res = await fetch('/auth/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (data.token) {
+        token = data.token;
+        role = JSON.parse(atob(token.split('.')[1])).role;
+        showPanel();
+      } else {
+        msg(data.error);
+      }
+    }
+
+    function logout() {
+      token = ''; role = '';
+      document.getElementById('panel').classList.add('hidden');
+      document.querySelector('.container').classList.remove('hidden');
+      msg('Logged out');
+    }
+
+    async function authGet(url) {
+      const res = await fetch(url, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      document.getElementById('result').innerText = await res.text();
+    }
+
+    async function authPost(url, data = {}) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(data)
+      });
+      document.getElementById('result').innerText = await res.text();
+    }
+
+    async function authDelete(url) {
+      const res = await fetch(url, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      document.getElementById('result').innerText = await res.text();
+    }
+  </script>
+</body>
+</html>
