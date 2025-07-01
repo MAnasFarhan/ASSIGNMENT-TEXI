@@ -18,6 +18,13 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
 const saltRounds = 10;
 
+const path = require('path');
+
+// Serve static files (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname)));
+
+
+
 function authenticate(req, res, next) {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
@@ -331,3 +338,5 @@ app.get('/admin/orders', authenticate, authorize(['admin']), async (req, res) =>
         res.status(400).json({ error: 'Failed to retrieve orders' });
     }
 });
+
+
