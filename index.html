@@ -1097,25 +1097,49 @@ async function loadAllUsers() {
     const res = await fetch('http://localhost:3000/admin/users', {
       headers: { Authorization: 'Bearer ' + token }
     });
+
     const users = await res.json();
 
-    let html = `<h3>User Accounts</h3>`;
-    users.forEach(u => {
-      html += `
-        <div style="background:#fef3f9; padding:10px; margin-bottom:10px; border-radius:10px;">
-          <strong>Name:</strong> ${u.name}<br>
-          <strong>Email:</strong> ${u.email}<br>
-          <strong>Role:</strong> ${u.role}<br>
-          <button onclick="deleteUser('${u._id}')">Delete User</button>
-        </div>
-      `;
-    });
+    const passengers = users.filter(u => u.role === 'passenger');
+    const drivers = users.filter(u => u.role === 'driver');
+
+    let html = `<h3>Passenger Accounts</h3>`;
+    if (passengers.length === 0) {
+      html += '<p>No passenger accounts found.</p>';
+    } else {
+      passengers.forEach(u => {
+        html += `
+          <div style="background:#e0f7fa; padding:10px; margin-bottom:10px; border-radius:10px;">
+            <strong>Name:</strong> ${u.name}<br>
+            <strong>Email:</strong> ${u.email}<br>
+            <strong>Role:</strong> ${u.role}
+          </div>
+        `;
+      });
+    }
+
+    html += `<h3>Driver Accounts</h3>`;
+    if (drivers.length === 0) {
+      html += '<p>No driver accounts found.</p>';
+    } else {
+      drivers.forEach(u => {
+        html += `
+          <div style="background:#fce4ec; padding:10px; margin-bottom:10px; border-radius:10px;">
+            <strong>Name:</strong> ${u.name}<br>
+            <strong>Email:</strong> ${u.email}<br>
+            <strong>Role:</strong> ${u.role}
+          </div>
+        `;
+      });
+    }
 
     box.innerHTML = html;
-  } catch {
+  } catch (err) {
+    console.error('Error loading users:', err);
     box.innerHTML = 'Failed to load users.';
   }
 }
+
 
 async function loadAllOrders() {
   const token = localStorage.getItem('token');
@@ -1126,27 +1150,47 @@ async function loadAllOrders() {
     const res = await fetch('http://localhost:3000/admin/orders', {
       headers: { Authorization: 'Bearer ' + token }
     });
+
     const orders = await res.json();
 
-    let html = `<h3>All Orders</h3>`;
-    orders.forEach(o => {
-  html += `
-    <div style="background:#ede9fe; padding:10px; margin-bottom:10px; border-radius:10px;">
-      <strong>Date:</strong> ${o.date}<br>
-      <strong>From:</strong> ${o.pickupLocation}<br>
-      <strong>To:</strong> ${o.destination}<br>
-      <strong>Status:</strong> ${o.status}<br>
-      <strong>User ID:</strong> ${o.userId}<br>
-      <strong>Driver ID:</strong> ${o.driverId || 'Unassigned'}<br>
-    </div>
-  `;
-});
+    const pendingOrders = orders.filter(o => o.status === 'pending');
+    const acceptedOrders = orders.filter(o => o.status === 'accepted');
+    const completedOrders = orders.filter(o => o.status === 'completed');
+
+    let html = '';
+
+    function renderOrderSection(title, orderList, color) {
+      html += `<h3 style="margin-top: 20px;">${title}</h3>`;
+      if (orderList.length === 0) {
+        html += `<p>No ${title.toLowerCase()}.</p>`;
+      } else {
+        orderList.forEach(o => {
+          html += `
+            <div style="background:${color}; padding:10px; margin-bottom:10px; border-radius:10px;">
+              <strong>Date:</strong> ${o.date || 'N/A'}<br>
+              <strong>From:</strong> ${o.pickupLocation}<br>
+              <strong>To:</strong> ${o.destination}<br>
+              <strong>Status:</strong> ${o.status}<br>
+              <strong>User ID:</strong> ${o.userId}<br>
+              <strong>Driver ID:</strong> ${o.driverId || 'Unassigned'}<br>
+              ${o.feedback ? `<strong>Feedback:</strong> <div style="margin-top:4px; background:#fff8dc; padding:6px 10px; border-radius:6px;">${o.feedback}</div><br>` : ''}
+            </div>
+          `;
+        });
+      }
+    }
+
+    renderOrderSection('Pending Orders', pendingOrders, '#fff3cd');
+    renderOrderSection('Accepted Orders', acceptedOrders, '#d1ecf1');
+    renderOrderSection('Completed Orders', completedOrders, '#d4edda');
 
     box.innerHTML = html;
-  } catch {
+  } catch (err) {
+    console.error('Error loading orders:', err);
     box.innerHTML = 'Failed to load orders.';
   }
 }
+
 
 async function deleteUser(id) {
   const token = localStorage.getItem('token');
