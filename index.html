@@ -10,7 +10,7 @@
     body {
       font-family: 'Poppins', sans-serif;
       min-height: 100vh;
-      background: linear-gradient(135deg, #f0f0f0, #c0c0c0, #e0ffff, #000000);
+      background: linear-gradient(135deg, #d37ffa, #eee9e9, #b8ffff, #000000);
       background-size: 400% 400%;
       animation: gradientBG 15s ease infinite;
       display: flex;
@@ -77,7 +77,7 @@
       border: 1px solid #ccc;
     }
     .btn {
-      background: linear-gradient(to right, #00ced1, #000);
+      background: linear-gradient(to right, #c5adfc, #a2f7e4);
       color: #fffdfd;
       border: none;
       padding: 12px;
@@ -113,8 +113,8 @@
       margin: 0.5rem;
       padding: 10px 20px;
       border: none;
-      background: #00ced1;
-      color: #fffefe;
+      background: linear-gradient(to right, #edeaf7, #a2f7e4);
+      color: #000000;
       border-radius: 10px;
       cursor: pointer;
       font-weight: 600;
@@ -122,11 +122,11 @@
     .panel button:hover { background: #20b2aa; }
 
    .driver-container {
-  background: #daf7e9;
+  background: #ffffff;
   padding: 2rem;
   border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  border: 2px solid #9dfcff; /* light blue border */
+  border: 2px solid #f57373; /* light blue border */
   max-width: 800px;
   width: 100%;
   margin: auto;
@@ -142,7 +142,7 @@
 }
 
 .driver-buttons button {
-  background: linear-gradient(to right, #7dd3fc, #38bdf8); /* lighter blue gradient */
+  background: linear-gradient(to right, #f78989, #38bdf8); /* lighter blue gradient */
   color: #ffffff;
   border: none;
   padding: 10px 20px;
@@ -155,6 +155,56 @@
 .driver-buttons button:hover {
   transform: scale(1.05);
   background: linear-gradient(to right, #60a5fa, #2563eb); /* soft hover */
+}
+
+.admin-container {
+  background: linear-gradient(to right, #ffffff, #dca2f7);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 2px solid #fbcfe8; /* light pink */
+  max-width: 800px;
+  width: 100%;
+  margin: auto;
+  text-align: center;
+}
+
+.admin-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4c1d95; /* violet text */
+  margin-bottom: 1.5rem;
+}
+
+.admin-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.admin-buttons button {
+  background: linear-gradient(to right, #fc94cf, #ac6eeb); /* pink → violet */
+  color: #111;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s ease, background 0.3s;
+}
+
+.admin-buttons button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(to right, #f472b6, #a855f7);
+}
+
+.admin-output {
+  text-align: left;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 1rem;
 }
 
 
@@ -265,7 +315,7 @@
         <div id="ordersList" style="margin-top: 2rem;"></div>
   </div>
 
-    <!-- ✅ DRIVER DASHBOARD -->
+    <!--  DRIVER DASHBOARD -->
   <div id="driverDashboard" style="display: none;">
   <div class="driver-container">
     <h2 id="driverWelcome" class="driver-title">Welcome!</h2>
@@ -279,6 +329,19 @@
     </div>
     <div id="pendingOrdersBox" class="driver-output"></div>
     <div id="driverProfileForm" class="driver-output" style="display: none;"></div>
+  </div>
+</div>
+
+  <!-- Admin Dashboard -->
+<div id="adminDashboard" style="display: none;">
+  <div class="admin-container">
+    <h2 id="adminWelcome" class="admin-title">Welcome, Admin!</h2>
+    <div class="admin-buttons">
+      <button onclick="loadAllUsers()">View All Users</button>
+      <button onclick="loadAllOrders()">View All Orders</button>
+      <button onclick="handleLogout()">Logout</button>
+    </div>
+    <div id="adminContentBox" class="admin-output"></div>
   </div>
 </div>
 
@@ -653,10 +716,14 @@ window.onscroll = function () {
       if (data.role === 'driver') {
         document.getElementById('driverDashboard').style.display = 'block';
         document.getElementById('driverWelcome').innerText = `Welcome, ${data.name}!`;
-      } else {
+      } else if (data.role === 'passenger') {
         document.getElementById('dashboard').style.display = 'block';
         document.getElementById('welcomeMessage').innerText = `Welcome, ${data.name}!`;
+      } else if (data.role === 'admin') {
+        document.getElementById('adminDashboard').style.display = 'block';
+        document.getElementById('adminWelcome').innerText = `Welcome, ${data.name}!`;
       }
+
     }
   } catch {
     alert('Failed to load profile.');
@@ -995,6 +1062,89 @@ async function deletePassengerAccount() {
     }
   } catch {
     alert('Error deleting account.');
+  }
+}
+
+async function loadAllUsers() {
+  const token = localStorage.getItem('token');
+  const box = document.getElementById('adminContentBox');
+  box.innerHTML = 'Loading users...';
+
+  try {
+    const res = await fetch('http://localhost:3000/admin/users', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const users = await res.json();
+
+    let html = `<h3>User Accounts</h3>`;
+    users.forEach(u => {
+      html += `
+        <div style="background:#fef3f9; padding:10px; margin-bottom:10px; border-radius:10px;">
+          <strong>Name:</strong> ${u.name}<br>
+          <strong>Email:</strong> ${u.email}<br>
+          <strong>Role:</strong> ${u.role}<br>
+          <button onclick="deleteUser('${u._id}')">Delete User</button>
+        </div>
+      `;
+    });
+
+    box.innerHTML = html;
+  } catch {
+    box.innerHTML = 'Failed to load users.';
+  }
+}
+
+async function loadAllOrders() {
+  const token = localStorage.getItem('token');
+  const box = document.getElementById('adminContentBox');
+  box.innerHTML = 'Loading orders...';
+
+  try {
+    const res = await fetch('http://localhost:3000/admin/orders', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const orders = await res.json();
+
+    let html = `<h3>All Orders</h3>`;
+    orders.forEach(o => {
+      html += `
+        <div style="background:#ede9fe; padding:10px; margin-bottom:10px; border-radius:10px;">
+          <strong>Date:</strong> ${o.date}<br>
+          <strong>From:</strong> ${o.pickupLocation}<br>
+          <strong>To:</strong> ${o.destination}<br>
+          <strong>Status:</strong> ${o.status}<br>
+          <strong>User ID:</strong> ${o.userId}<br>
+          <strong>Driver ID:</strong> ${o.driverId || 'Unassigned'}<br>
+        </div>
+      `;
+    });
+
+    box.innerHTML = html;
+  } catch {
+    box.innerHTML = 'Failed to load orders.';
+  }
+}
+
+async function deleteUser(id) {
+  const token = localStorage.getItem('token');
+  if (!confirm('Delete this user?')) return;
+
+  try {
+    const res = await fetch(`http://localhost:3000/admin/users/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+
+    if (res.status === 204) {
+      alert('User deleted.');
+      loadAllUsers();
+    } else {
+      const data = await res.json();
+      alert(data.error || 'Failed to delete user.');
+    }
+  } catch (err) {
+    alert('Error deleting user.');
+    console.error(err);
   }
 }
 

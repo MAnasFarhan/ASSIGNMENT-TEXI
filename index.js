@@ -486,7 +486,11 @@ app.get('/drivers/completed-orders', authenticate, authorize(['driver']), async 
 // ---------------- ADMIN ----------------
 app.get('/admin/users', authenticate, authorize(['admin']), async (req, res) => {
     try {
-        const users = await db.collection('users').find({}, { projection: { password: 0 } }).toArray();
+        const users = await db.collection('users').find(
+  { role: { $ne: 'admin' } },  //Exclude admins
+  { projection: { password: 0 } }
+).toArray();
+
         res.status(200).json(users);
     } catch {
         res.status(500).json({ error: 'Failed to fetch user accounts' });
@@ -494,13 +498,19 @@ app.get('/admin/users', authenticate, authorize(['admin']), async (req, res) => 
 });
 
 app.delete('/admin/users/:id', authenticate, authorize(['admin']), async (req, res) => {
-    try {
-        await db.collection('users').deleteOne({ _id: ObjectId(req.params.id) });
-        res.status(204).send();
-    } catch {
-        res.status(400).json({ error: 'Failed to delete user' });
+  try {
+    const result = await db.collection('users').deleteOne({ _id: new ObjectId(req.params.id) });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'User not found' });
     }
+
+    res.status(204).send();
+  } catch {
+    res.status(400).json({ error: 'Failed to delete user' });
+  }
 });
+
 
 app.get('/admin/orders', authenticate, authorize(['admin']), async (req, res) => {
     try {
