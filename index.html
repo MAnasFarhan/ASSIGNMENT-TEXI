@@ -222,6 +222,7 @@
     <div class="panel">
       <button onclick="toggleCreateOrderForm()">Create Order</button>
       <button onclick="toggleOrdersList()">View My Orders</button>
+      <button onclick="deletePassengerAccount()">Delete My Account</button>
       <button onclick="handleLogout()">Logout</button>
     </div>
 
@@ -271,6 +272,7 @@
     <div class="driver-buttons">
       <button onclick="loadPendingOrders()">View Pending Orders</button>
       <button onclick="loadDriverAcceptedOrders()">View My Accepted Orders</button>
+      <button onclick="loadDriverCompletedOrders()">View Completed Orders</button>
       <button onclick="showDriverProfileForm()">Update Profile</button>
       <button onclick="deleteDriverAccount()">Delete Account</button>
       <button onclick="handleLogout()">Logout</button>
@@ -547,39 +549,69 @@ window.onscroll = function () {
     }
 
     async function loadOrders() {
-      const token = localStorage.getItem('token');
-      const ordersBox = document.getElementById('ordersList');
-      ordersBox.innerHTML = 'Loading...';
+  const token = localStorage.getItem('token');
+  const ordersBox = document.getElementById('ordersList');
+  ordersBox.innerHTML = 'Loading...';
 
-      try {
-        const res = await fetch('http://localhost:3000/passengers/orders', {
-          headers: { Authorization: 'Bearer ' + token }
+  try {
+    const res = await fetch('http://localhost:3000/passengers/orders', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const orders = await res.json();
+
+    // Group orders by status
+    const pending = orders.filter(o => o.status === 'pending');
+    const accepted = orders.filter(o => o.status === 'accepted');
+    const completed = orders.filter(o => o.status === 'completed');
+
+    let html = `<h3>Your Orders</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">`;
+
+    function buildSection(title, items, type) {
+      let section = `<div style="flex: 1; min-width: 300px; background:#f9f9f9; padding:1rem; border-radius:10px;">
+        <h4>${title}</h4>`;
+      if (items.length === 0) {
+        section += '<p>No orders.</p>';
+      } else {
+        items.forEach(o => {
+          section += `<div style="background:#eee; padding:10px; margin-bottom:10px; border-radius:10px;">
+            <strong>Date:</strong> ${o.date}<br>
+            <strong>From:</strong> ${o.pickupLocation}<br>
+            <strong>To:</strong> ${o.destination}<br>
+            <strong>Time:</strong> ${o.timeOrder}<br>
+            <strong>Status:</strong> ${o.status}<br>
+            <strong>Payment:</strong> RM${o.payment}<br>`;
+
+         if (type === 'pending') {
+  section += `<button onclick="cancelOrder('${o._id}')">Cancel</button>`;
+} else if (type === 'accepted') {
+  section += `
+    <button onclick="completeOrder('${o._id}')">Complete</button>
+    <button onclick="viewAssignedDriver('${o._id}')">View Driver</button>
+  `;
+} else if (type === 'completed') {
+  section += `<button onclick="viewAssignedDriver('${o._id}')">View Driver</button>`;
+}
+
+
+          section += `</div>`;
         });
-        const orders = await res.json();
-        let html = '<h3>Your Orders</h3>';
-        if (!orders.length) html += '<p>No orders found.</p>';
-        else {
-          html += '<ul style="list-style:none;">';
-          orders.forEach(o => {
-            html += `<li style="background:#eee; padding:10px; border-radius:10px; margin-bottom:10px;">
-              <strong>Date:</strong> ${o.date || 'N/A'}<br>
-              <strong>From:</strong> ${o.pickupLocation}<br>
-              <strong>To:</strong> ${o.destination}<br>
-              <strong>Status:</strong> ${o.status}<br>
-              <strong>Time:</strong> ${o.timeOrder}<br>
-              <strong>Payment:</strong> RM${o.payment}<br>`;
-            if (o.status === 'pending') {
-              html += `<button onclick="cancelOrder('${o._id}')">Cancel</button>`;
-            }
-            html += '</li>';
-          });
-          html += '</ul>';
-        }
-        ordersBox.innerHTML = html;
-      } catch {
-        ordersBox.innerHTML = 'Error loading orders.';
       }
+      section += `</div>`;
+      return section;
     }
+
+    html += buildSection("Pending", pending, 'pending');
+    html += buildSection("Accepted", accepted, 'accepted');
+    html += buildSection("Completed", completed, 'completed');
+    html += `</div>`;
+
+    ordersBox.innerHTML = html;
+  } catch {
+    ordersBox.innerHTML = 'Error loading orders.';
+  }
+}
+
 
     async function cancelOrder(id) {
       const token = localStorage.getItem('token');
@@ -791,16 +823,18 @@ async function loadDriverAcceptedOrders() {
     } else {
       orders.forEach(o => {
         html += `
-          <div style="background:#eee; padding:10px; margin-bottom:10px; border-radius:10px;">
-            <strong>Date:</strong> ${o.date}<br>
-            <strong>From:</strong> ${o.pickupLocation}<br>
-            <strong>To:</strong> ${o.destination}<br>
-            <strong>Time:</strong> ${o.timeOrder}<br>
-            <strong>Phone:</strong> ${o.phoneNumber}<br>
-            <strong>Payment:</strong> RM${o.payment}<br>
-            <button onclick="cancelAcceptedOrder('${o._id}')">Cancel Order</button>
-          </div>
-        `;
+  <div style="background:#eee; padding:10px; margin-bottom:10px; border-radius:10px;">
+    <strong>Date:</strong> ${o.date}<br>
+    <strong>From:</strong> ${o.pickupLocation}<br>
+    <strong>To:</strong> ${o.destination}<br>
+    <strong>Status:</strong> ${o.status}<br>
+    <strong>Time:</strong> ${o.timeOrder}<br>
+    <strong>Phone:</strong> ${o.phoneNumber}<br>
+    <strong>Payment:</strong> RM${o.payment}<br>
+    ${o.status === 'accepted' ? `<button onclick="cancelAcceptedOrder('${o._id}')">Cancel Order</button>` : ''}
+  </div>
+`;
+
       });
     }
 
@@ -855,6 +889,114 @@ async function deleteDriverAccount() {
   }
 }
 
+async function completeOrder(orderId) {
+  const token = localStorage.getItem('token');
+  if (!confirm('Mark this order as completed?')) return;
+
+  try {
+    const res = await fetch(`http://localhost:3000/passengers/order/${orderId}/complete`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert('Order marked as completed.');
+      loadOrders();
+    } else {
+      alert(data.error || 'Failed to complete order.');
+    }
+  } catch {
+    alert('Error completing order.');
+  }
+}
+
+async function loadDriverCompletedOrders() {
+  const token = localStorage.getItem('token');
+  const box = document.getElementById('pendingOrdersBox');
+  document.getElementById('driverProfileForm').style.display = 'none';
+  box.innerHTML = 'Loading...';
+
+  try {
+    const res = await fetch('http://localhost:3000/drivers/completed-orders', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const orders = await res.json();
+
+    let html = `<h3>Completed Orders</h3>
+      <button onclick="returnToDriverMenu()" style="margin-bottom: 1rem;">Back to Menu</button>`;
+
+    if (!orders.length) {
+      html += '<p>No completed orders.</p>';
+    } else {
+      orders.forEach(o => {
+        html += `
+          <div style="background:#eee; padding:10px; margin-bottom:10px; border-radius:10px;">
+            <strong>Date:</strong> ${o.date}<br>
+            <strong>From:</strong> ${o.pickupLocation}<br>
+            <strong>To:</strong> ${o.destination}<br>
+            <strong>Time:</strong> ${o.timeOrder}<br>
+            <strong>Phone:</strong> ${o.phoneNumber}<br>
+            <strong>Payment:</strong> RM${o.payment}<br>
+            <strong>Status:</strong> ${o.status}
+          </div>
+        `;
+      });
+    }
+
+    box.innerHTML = html;
+  } catch {
+    box.innerHTML = 'Failed to load completed orders.';
+  }
+}
+
+async function viewAssignedDriver(orderId) {
+  const token = localStorage.getItem('token');
+
+  try {
+    const res = await fetch(`http://localhost:3000/passengers/order/${orderId}/driver`, {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+
+    const driver = await res.json();
+
+    if (res.ok) {
+      alert(
+        `Driver Name: ${driver.name}\n` +
+        `Phone: ${driver.phone || 'N/A'}\n` +
+        `Car: ${driver.carname || 'N/A'}\n` +
+        `From: ${driver.locationFrom || 'N/A'}`
+      );
+    } else {
+      alert(driver.error || 'No driver assigned.');
+    }
+  } catch {
+    alert('Failed to load driver info.');
+  }
+}
+
+
+async function deletePassengerAccount() {
+  const token = localStorage.getItem('token');
+  if (!confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
+
+  try {
+    const res = await fetch('http://localhost:3000/passengers/account', {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+
+    if (res.ok) {
+      alert('Account deleted.');
+      localStorage.removeItem('token');
+      location.reload();
+    } else {
+      const data = await res.json();
+      alert(data.error || 'Failed to delete account.');
+    }
+  } catch {
+    alert('Error deleting account.');
+  }
+}
 
 
   </script>

@@ -265,40 +265,40 @@ app.delete('/passengers/account', authenticate, authorize(['passenger']), async 
 });
 
 app.get('/passengers/order/:id/driver', authenticate, authorize(['passenger']), async (req, res) => {
-    try {
-        const order = await db.collection('orders').findOne({
-            _id: new ObjectId(req.params.id),
-            userId: req.user.id
-        });
+  try {
+    const order = await db.collection('orders').findOne({
+      _id: new ObjectId(req.params.id),
+      userId: req.user.id
+    });
 
-        if (!order || order.status !== 'accepted' || !order.driverId) {
-            return res.status(404).json({ error: 'No driver assigned' });
-        }
-
-        const driver = await db.collection('users').findOne(
-            { _id: order.driverId },
-            {
-                projection: {
-                    name: 1,
-                    phone: 1,
-                    carname: 1,
-                    locationFrom: 1,
-                    arrivingInMinutes: 1,
-                
-                }
-            }
-        );
-
-        if (!driver) {
-            return res.status(404).json({ error: 'Driver not found' });
-        }
-
-        res.status(200).json(driver);
-    } catch (err) {
-        console.error(err);
-        res.status(400).json({ error: 'Failed to retrieve driver info', details: err.message });
+    if (!order || !['accepted', 'completed'].includes(order.status) || !order.driverId) {
+      return res.status(404).json({ error: 'No driver assigned' });
     }
+
+    const driver = await db.collection('users').findOne(
+      { _id: new ObjectId(order.driverId) },  // ✅ must wrap in ObjectId!
+      {
+        projection: {
+          name: 1,
+          phone: 1,
+          carname: 1,
+          locationFrom: 1
+        }
+      }
+    );
+
+    if (!driver) {
+      return res.status(404).json({ error: 'Driver not found' });
+    }
+
+    res.status(200).json(driver);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Failed to retrieve driver info', details: err.message });
+  }
 });
+
+
 
 app.get('/drivers/orders', authenticate, authorize(['driver']), async (req, res) => {
     try {
@@ -311,26 +311,38 @@ app.get('/drivers/orders', authenticate, authorize(['driver']), async (req, res)
 });
 
 app.post('/passengers/order/:id/complete', authenticate, authorize(['passenger']), async (req, res) => {
-    try {
-        const result = await db.collection('orders').updateOne(
-            {
-                _id: new ObjectId(req.params.id),
-                userId: req.user.id,
-                status: 'accepted'
-            },
-            { $set: { status: 'completed' } }
-        );
+  try {
+    const result = await db.collection('orders').updateOne(
+      {
+        _id: new ObjectId(req.params.id),
+        userId: req.user.id,
+        status: 'accepted',           // ✅ ensure it was accepted
+        driverId: { $exists: true }   // ✅ ensure driver was assigned
+      },
+      { $set: { status: 'completed' } }
+    );
 
-        if (result.modifiedCount === 0) {
-            return res.status(404).json({ error: 'Order not found or not eligible to complete' });
-        }
-
-        res.status(200).json({ message: 'Order marked as completed' });
-    } catch (err) {
-        console.error(err);
-        res.status(400).json({ error: 'Failed to complete order', details: err.message });
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ error: 'Order not found or not eligible to complete' });
     }
+
+    res.status(200).json({ message: 'Order marked as completed' });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Failed to complete order', details: err.message });
+  }
 });
+
+app.delete('/passengers/account', authenticate, authorize(['passenger']), async (req, res) => {
+  try {
+    await db.collection('users').deleteOne({ _id: new ObjectId(req.user.id) });
+    res.status(200).json({ message: 'Account successfully deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Failed to delete account', details: err.message });
+  }
+});
+
 
 // ---------------- DRIVER ----------------
 app.get('/drivers/orders', authenticate, authorize(['driver']), async (req, res) => {
@@ -455,6 +467,21 @@ app.get('/drivers/my-orders', authenticate, authorize(['driver']), async (req, r
         res.status(400).json({ error: 'Failed to retrieve driver orders', details: err.message });
     }
 });
+
+app.get('/drivers/completed-orders', authenticate, authorize(['driver']), async (req, res) => {
+  try {
+    const driverId = new ObjectId(req.user.id);
+    const completedOrders = await db.collection('orders').find({
+      driverId: driverId,
+      status: 'completed'
+    }).toArray();
+    res.status(200).json(completedOrders);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Failed to retrieve completed orders', details: err.message });
+  }
+});
+
 
 // ---------------- ADMIN ----------------
 app.get('/admin/users', authenticate, authorize(['admin']), async (req, res) => {
