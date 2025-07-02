@@ -4,6 +4,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 require('dotenv').config();
 const port = process.env.PORT || 3000;
 
@@ -531,7 +532,7 @@ app.get('/auth/profile', authenticate, async (req, res) => {
   }
 });
 
-const path = require('path');
+
 // --- Serve static files (HTML, CSS, JS) --- //
 app.use(express.static(path.join(__dirname)));
 
