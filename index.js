@@ -276,7 +276,7 @@ app.get('/passengers/order/:id/driver', authenticate, authorize(['passenger']), 
     }
 
     const driver = await db.collection('users').findOne(
-      { _id: new ObjectId(order.driverId) },  // ✅ must wrap in ObjectId!
+      { _id: new ObjectId(order.driverId) },  
       {
         projection: {
           name: 1,
@@ -316,8 +316,8 @@ app.post('/passengers/order/:id/complete', authenticate, authorize(['passenger']
       {
         _id: new ObjectId(req.params.id),
         userId: req.user.id,
-        status: 'accepted',           // ✅ ensure it was accepted
-        driverId: { $exists: true }   // ✅ ensure driver was assigned
+        status: 'accepted',          
+        driverId: { $exists: true }   
       },
       { $set: { status: 'completed' } }
     );
@@ -361,7 +361,7 @@ app.post('/drivers/accept', authenticate, authorize(['driver']), async (req, res
       {
         _id: new ObjectId(orderId),
         status: 'pending',
-        driverId: { $exists: false } // ✅ prevent re-accepting if already taken/canceled
+        driverId: { $exists: false } 
       },
       {
         $set: { status: 'accepted', driverId: new ObjectId(req.user.id) }
@@ -414,7 +414,7 @@ app.put('/drivers/profile', authenticate, authorize(['driver']), async (req, res
       locationFrom
     };
 
-    // ✅ Hash the password before saving
+    //  Hash the password before saving
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10); // same salt rounds
       updates.password = hashedPassword;
@@ -515,7 +515,7 @@ app.get('/auth/profile', authenticate, async (req, res) => {
   try {
     const user = await db.collection('users').findOne(
       { _id: new ObjectId(req.user.id) },
-      { projection: { name: 1, role: 1 } }  // 👈 must include role
+      { projection: { name: 1, role: 1 } }  //  include role
     );
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);
