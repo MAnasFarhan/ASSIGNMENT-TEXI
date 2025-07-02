@@ -531,6 +531,7 @@ app.get('/auth/profile', authenticate, async (req, res) => {
   }
 });
 
+const path = require('path');
 // --- Serve static files (HTML, CSS, JS) --- //
 app.use(express.static(path.join(__dirname)));
 
