@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 require('dotenv').config();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3000;
 
 const app = express();
 app.use(express.json());
@@ -311,14 +311,14 @@ app.get('/drivers/orders', authenticate, authorize(['driver']), async (req, res)
 app.post('/passengers/order/:id/complete', authenticate, authorize(['passenger']), async (req, res) => {
   try {
     const result = await db.collection('orders').updateOne(
-      {
-        _id: new ObjectId(req.params.id),
-        userId: req.user.id,
-        status: 'accepted',          
-        driverId: { $exists: true }   
-      },
+  {
+    _id: new ObjectId(req.params.id),
+    userId: req.user.id,
+    status: 'accepted',
+    driverId: { $exists: true }
+  },
       { $set: { status: 'completed' } }
-    );
+);
 
     if (result.modifiedCount === 0) {
       return res.status(404).json({ error: 'Order not found or not eligible to complete' });

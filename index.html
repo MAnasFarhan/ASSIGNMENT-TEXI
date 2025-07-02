@@ -228,6 +228,10 @@
     <div class="switch">
       <span>Don't have an account?</span>
       <button onclick="showRegister()">Register</button>
+      <div style="margin-top: 1rem; text-align: center;">
+  <a href="#" onclick="toggleWhatsNew()" style="color: #00ced1; font-weight: bold;">What's New?</a>
+</div>
+
     </div>
   </div>
 
@@ -263,6 +267,10 @@
     <div class="switch">
       <span>Already have an account?</span>
       <button onclick="showLogin()">Login</button>
+      <div style="margin-top: 1rem; text-align: center;">
+  <a href="#" onclick="toggleWhatsNew()" style="color: #00ced1; font-weight: bold;">What's New?</a>
+</div>
+
     </div>
   </div>
 
@@ -342,6 +350,21 @@
       <button onclick="handleLogout()">Logout</button>
     </div>
     <div id="adminContentBox" class="admin-output"></div>
+  </div>
+</div>
+
+<div id="whatsNewModal" style="display: none; position: fixed; top: 10%; left: 50%; transform: translateX(-50%); width: 80%; max-width: 500px; background: white; border: 2px solid #00ced1; border-radius: 10px; padding: 20px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+  <h3 style="margin-bottom: 1rem;">🚀 What's New</h3>
+  <ul style="line-height: 1.6;">
+    <li>✅ User can now request a Feedback</li>
+    <li>✅ Improved interface styling</li>
+    <li>✅ View and complete rides functionality</li>
+    <li>✅ Pickup and Destination For Aeon Ayer Keroh added</li>
+    <li>✅ Pickup and Destination For Melaka Sentral added</li>
+    <li>✅ Version 1.1 Created</li>
+  </ul>
+  <div style="text-align: right; margin-top: 1rem;">
+    <button onclick="toggleWhatsNew()" style="background: #00ced1; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">Close</button>
   </div>
 </div>
 
@@ -649,7 +672,7 @@ window.onscroll = function () {
   section += `<button onclick="cancelOrder('${o._id}')">Cancel</button>`;
 } else if (type === 'accepted') {
   section += `
-    <button onclick="completeOrder('${o._id}')">Complete</button>
+<button onclick="completeOrder('${o._id}')">Complete</button>
     <button onclick="viewAssignedDriver('${o._id}')">View Driver</button>
   `;
 } else if (type === 'completed') {
@@ -1107,17 +1130,17 @@ async function loadAllOrders() {
 
     let html = `<h3>All Orders</h3>`;
     orders.forEach(o => {
-      html += `
-        <div style="background:#ede9fe; padding:10px; margin-bottom:10px; border-radius:10px;">
-          <strong>Date:</strong> ${o.date}<br>
-          <strong>From:</strong> ${o.pickupLocation}<br>
-          <strong>To:</strong> ${o.destination}<br>
-          <strong>Status:</strong> ${o.status}<br>
-          <strong>User ID:</strong> ${o.userId}<br>
-          <strong>Driver ID:</strong> ${o.driverId || 'Unassigned'}<br>
-        </div>
-      `;
-    });
+  html += `
+    <div style="background:#ede9fe; padding:10px; margin-bottom:10px; border-radius:10px;">
+      <strong>Date:</strong> ${o.date}<br>
+      <strong>From:</strong> ${o.pickupLocation}<br>
+      <strong>To:</strong> ${o.destination}<br>
+      <strong>Status:</strong> ${o.status}<br>
+      <strong>User ID:</strong> ${o.userId}<br>
+      <strong>Driver ID:</strong> ${o.driverId || 'Unassigned'}<br>
+    </div>
+  `;
+});
 
     box.innerHTML = html;
   } catch {
@@ -1146,6 +1169,11 @@ async function deleteUser(id) {
     alert('Error deleting user.');
     console.error(err);
   }
+}
+
+function toggleWhatsNew() {
+  const modal = document.getElementById('whatsNewModal');
+  modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
 }
 
 
