@@ -341,6 +341,39 @@ app.delete('/passengers/account', authenticate, authorize(['passenger']), async 
   }
 });
 
+// 🚨 Add this route exactly as shown below
+app.post('/passengers/order/:id/feedback', authenticate, authorize(['passenger']), async (req, res) => {
+  const { feedback } = req.body;
+
+  if (!feedback || feedback.length < 3) {
+    return res.status(400).json({ error: 'Feedback is required and should be meaningful.' });
+  }
+
+  try {
+    const result = await db.collection('orders').updateOne(
+      {
+        _id: new ObjectId(req.params.id),
+        userId: req.user.id,
+        status: 'completed'
+      },
+      {
+        $set: { feedback }
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ error: 'Order not found or not eligible for feedback' });
+    }
+
+    res.status(200).json({ message: 'Feedback submitted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to submit feedback', details: err.message });
+  }
+});
+
+
+
 
 // ---------------- DRIVER ----------------
 app.get('/drivers/orders', authenticate, authorize(['driver']), async (req, res) => {

@@ -99,16 +99,16 @@
       cursor: pointer;
     }
     #dashboard {
-      display: none;
-      max-width: 1000px;
+  display: none;
+  max-width: 1000px;
       width: 100%;
-      padding: 2rem;
+  padding: 2rem;
       background: hsl(0, 0%, 100%);
-      color: #000000;
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-      border: 1px solid rgb(144, 255, 240);
-    }
+  color: #000000;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  border: 1px solid rgb(144, 255, 240);
+}
     .panel button {
       margin: 0.5rem;
       padding: 10px 20px;
@@ -158,16 +158,18 @@
 }
 
 .admin-container {
-  background: linear-gradient(to right, #ffffff, #dca2f7);
-  padding: 2rem;
+  background: linear-gradient(to right, #cefff0, #dca2f7);
+  padding: 2rem 4rem;
   border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  border: 2px solid #fbcfe8; /* light pink */
-  max-width: 800px;
-  width: 100%;
-  margin: auto;
-  text-align: center;
+  border: 2px solid #fbcfe8;
+  width: 95vw;           /*  Almost full screen */
+  max-width: 900px;     /*  Wide on large screens */
+  margin: 2rem auto;
+  text-align: left;
+  overflow-x: auto;
 }
+
 
 .admin-title {
   font-size: 2rem;
@@ -185,7 +187,7 @@
 }
 
 .admin-buttons button {
-  background: linear-gradient(to right, #fc94cf, #ac6eeb); /* pink → violet */
+  background: linear-gradient(to right, #fc94cf, #ffffff); /* pink → violet */
   color: #111;
   border: none;
   padding: 10px 20px;
@@ -356,6 +358,7 @@
 <div id="whatsNewModal" style="display: none; position: fixed; top: 10%; left: 50%; transform: translateX(-50%); width: 80%; max-width: 500px; background: white; border: 2px solid #00ced1; border-radius: 10px; padding: 20px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
   <h3 style="margin-bottom: 1rem;">🚀 What's New</h3>
   <ul style="line-height: 1.6;">
+    <li>✅ Version 2.0 LATEST</li>
     <li>✅ User can now request a Feedback</li>
     <li>✅ Improved interface styling</li>
     <li>✅ View and complete rides functionality</li>
@@ -365,6 +368,17 @@
   </ul>
   <div style="text-align: right; margin-top: 1rem;">
     <button onclick="toggleWhatsNew()" style="background: #00ced1; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">Close</button>
+  </div>
+</div>
+
+<!-- Feedback Modal -->
+<div id="feedbackModal" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); background:#fff; padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.3); max-width:400px; width:90%; z-index:1000;">
+  <h3>Submit Feedback</h3>
+  <textarea id="feedbackText" rows="4" style="width:100%; padding:10px; border-radius:8px; margin-bottom:1rem;"></textarea>
+  <input type="hidden" id="feedbackOrderId" />
+  <div style="text-align:right;">
+    <button onclick="submitFeedback()" style="margin-right:10px;">Submit</button>
+    <button onclick="hideFeedbackModal()">Cancel</button>
   </div>
 </div>
 
@@ -673,11 +687,14 @@ window.onscroll = function () {
 } else if (type === 'accepted') {
   section += `
 <button onclick="completeOrder('${o._id}')">Complete</button>
-    <button onclick="viewAssignedDriver('${o._id}')">View Driver</button>
-  `;
+   `;
 } else if (type === 'completed') {
-  section += `<button onclick="viewAssignedDriver('${o._id}')">View Driver</button>`;
+  section += `
+    <button onclick="viewAssignedDriver('${o._id}')">View Driver</button>
+    <button onclick="showFeedbackForm('${o._id}')">Give Feedback</button>
+  `;
 }
+
 
 
           section += `</div>`;
@@ -1219,6 +1236,50 @@ function toggleWhatsNew() {
   const modal = document.getElementById('whatsNewModal');
   modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
 }
+
+function showFeedbackForm(orderId) {
+  document.getElementById('feedbackOrderId').value = orderId;
+  document.getElementById('feedbackText').value = '';
+  document.getElementById('feedbackModal').style.display = 'block';
+}
+
+function hideFeedbackModal() {
+  document.getElementById('feedbackModal').style.display = 'none';
+}
+
+async function submitFeedback() {
+  const orderId = document.getElementById('feedbackOrderId').value;
+  const feedback = document.getElementById('feedbackText').value.trim();
+  const token = localStorage.getItem('token');
+
+  if (feedback.length < 3) {
+    alert('Feedback must be at least 3 characters.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`http://localhost:3000/passengers/order/${orderId}/feedback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ feedback })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert('Feedback submitted!');
+      hideFeedbackModal();
+      loadOrders(); // Refresh view
+    } else {
+      alert(data.error || 'Failed to submit feedback');
+    }
+  } catch (err) {
+    alert('Error submitting feedback');
+  }
+}
+
 
 
   </script>
