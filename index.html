@@ -54,7 +54,7 @@
     h1, h2, h3 {
       font-size: 1.8rem;
       margin-bottom: 1rem;
-      color: #333;
+      color: #444444;
     }
     .input-group {
       margin-bottom: 1rem;
@@ -64,7 +64,7 @@
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 600;
-      color: #444;
+      color: #807f7f;
     }
     .input-group input,
     .input-group select {
@@ -78,7 +78,7 @@
     }
     .btn {
       background: linear-gradient(to right, #00ced1, #000);
-      color: #fff;
+      color: #fffdfd;
       border: none;
       padding: 12px;
       width: 100%;
@@ -103,23 +103,61 @@
       max-width: 1000px;
       width: 100%;
       padding: 2rem;
-      background: #fdfdfd;
-      color: #111;
+      background: hsl(0, 0%, 100%);
+      color: #000000;
       border-radius: 20px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-      border: 1px solid silver;
+      border: 1px solid rgb(144, 255, 240);
     }
     .panel button {
       margin: 0.5rem;
       padding: 10px 20px;
       border: none;
       background: #00ced1;
-      color: #111;
+      color: #fffefe;
       border-radius: 10px;
       cursor: pointer;
       font-weight: 600;
     }
     .panel button:hover { background: #20b2aa; }
+
+   .driver-container {
+  background: #daf7e9;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 2px solid #9dfcff; /* light blue border */
+  max-width: 800px;
+  width: 100%;
+  margin: auto;
+  text-align: center;
+}
+
+.driver-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.driver-buttons button {
+  background: linear-gradient(to right, #7dd3fc, #38bdf8); /* lighter blue gradient */
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s ease, background 0.3s;
+}
+
+.driver-buttons button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(to right, #60a5fa, #2563eb); /* soft hover */
+}
+
+
   </style>
 </head>
 <body>
@@ -228,17 +266,18 @@
 
     <!-- ✅ DRIVER DASHBOARD -->
   <div id="driverDashboard" style="display: none;">
-  <div class="panel">
-    <h2 id="driverWelcome" style="margin-bottom: 1rem;">Welcome!</h2>
-    <button onclick="loadPendingOrders()">View Pending Orders</button>
-    <button onclick="loadDriverAcceptedOrders()">View My Accepted Orders</button>
-    <button onclick="showDriverProfileForm()">Update Profile</button>
-    <button onclick="deleteDriverAccount()">Delete Account</button>
-    <button onclick="handleLogout()">Logout</button>
-    
+  <div class="driver-container">
+    <h2 id="driverWelcome" class="driver-title">Welcome!</h2>
+    <div class="driver-buttons">
+      <button onclick="loadPendingOrders()">View Pending Orders</button>
+      <button onclick="loadDriverAcceptedOrders()">View My Accepted Orders</button>
+      <button onclick="showDriverProfileForm()">Update Profile</button>
+      <button onclick="deleteDriverAccount()">Delete Account</button>
+      <button onclick="handleLogout()">Logout</button>
+    </div>
+    <div id="pendingOrdersBox" class="driver-output"></div>
+    <div id="driverProfileForm" class="driver-output" style="display: none;"></div>
   </div>
-  <div id="pendingOrdersBox" style="margin-top: 2rem;"></div>
-  <div id="driverProfileForm" style="margin-top: 2rem; display: none;"></div>
 </div>
 
 
