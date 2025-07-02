@@ -18,10 +18,6 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
 const saltRounds = 10;
 
-const path = require('path');
-
-// Serve static files (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname)));
 
 function authenticate(req, res, next) {
     const token = req.headers.authorization?.split(' ')[1];
@@ -534,5 +530,9 @@ app.get('/auth/profile', authenticate, async (req, res) => {
   }
 });
 
+// --- Serve static files (HTML, CSS, JS) --- //
+app.use(express.static(path.join(__dirname)));
 
+// --- Start Server --- //
+app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
 
