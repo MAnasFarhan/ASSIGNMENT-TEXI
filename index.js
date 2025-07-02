@@ -343,19 +343,30 @@ app.get('/drivers/orders', authenticate, authorize(['driver']), async (req, res)
 });
 
 app.post('/drivers/accept', authenticate, authorize(['driver']), async (req, res) => {
-    const { orderId } = req.body;
-    try {
-        const result = await db.collection('orders').updateOne(
-            { _id: new ObjectId(orderId), status: 'pending' },
-            { $set: { status: 'accepted', driverId: new ObjectId(req.user.id) } }
-        );
-        if (result.modifiedCount === 0) return res.status(404).json({ error: 'Order not found or already accepted' });
-        res.json({ message: 'Order accepted' });
-    } catch (err) {
+  const { orderId } = req.body;
+  try {
+    const result = await db.collection('orders').updateOne(
+      {
+        _id: new ObjectId(orderId),
+        status: 'pending',
+        driverId: { $exists: false } // ✅ prevent re-accepting if already taken/canceled
+      },
+      {
+        $set: { status: 'accepted', driverId: new ObjectId(req.user.id) }
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ error: 'Order not available or already accepted/canceled' });
+    }
+
+    res.json({ message: 'Order accepted' });
+  } catch (err) {
     console.error(err);
     res.status(400).json({ error: 'Failed to accept order', details: err.message });
-}
+  }
 });
+
 
 app.post('/drivers/order/:id/cancel', authenticate, authorize(['driver']), async (req, res) => {
     try {
@@ -380,22 +391,37 @@ app.post('/drivers/order/:id/cancel', authenticate, authorize(['driver']), async
 });
 
 app.put('/drivers/profile', authenticate, authorize(['driver']), async (req, res) => {
-    const { name, email, password, phone, carname, locationFrom, arrivingInMinutes } = req.body;
+  const { name, email, password, phone, carname, locationFrom } = req.body;
 
-    try {
-        const result = await db.collection('users').updateOne(
-            { _id: new ObjectId(req.user.id) },
-            { $set: { name, email, password, phone, carname, locationFrom, arrivingInMinutes } }
-        );
+  try {
+    const updates = {
+      name,
+      email,
+      phone,
+      carname,
+      locationFrom
+    };
 
-        if (result.modifiedCount === 0)
-            return res.status(404).json({ error: 'Driver not found' });
-
-        res.json({ message: 'Profile updated' });
-    } catch (err) {
-        res.status(400).json({ error: 'Failed to update profile', details: err.message });
+    // ✅ Hash the password before saving
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10); // same salt rounds
+      updates.password = hashedPassword;
     }
+
+    const result = await db.collection('users').updateOne(
+      { _id: new ObjectId(req.user.id) },
+      { $set: updates }
+    );
+
+    if (result.modifiedCount === 0)
+      return res.status(404).json({ error: 'Driver not found' });
+
+    res.json({ message: 'Profile updated' });
+  } catch (err) {
+    res.status(400).json({ error: 'Failed to update profile', details: err.message });
+  }
 });
+
 
 app.delete('/drivers/account', authenticate, authorize(['driver']), async (req, res) => {
     try {
@@ -462,13 +488,14 @@ app.get('/auth/profile', authenticate, async (req, res) => {
   try {
     const user = await db.collection('users').findOne(
       { _id: new ObjectId(req.user.id) },
-      { projection: { name: 1 } }
+      { projection: { name: 1, role: 1 } }  // 👈 must include role
     );
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ name: user.name });
+    res.json(user);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch profile' });
   }
 });
+
 
 

@@ -9,7 +9,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Poppins', sans-serif;
-      height: 100vh;
+      min-height: 100vh;
       background: linear-gradient(135deg, #f0f0f0, #c0c0c0, #e0ffff, #000000);
       background-size: 400% 400%;
       animation: gradientBG 15s ease infinite;
@@ -18,6 +18,8 @@
       justify-content: center;
       align-items: center;
       color: #222;
+      padding: 2rem 0;
+      overflow-y: auto;
     }
     @keyframes gradientBG {
       0% { background-position: 0% 50%; }
@@ -224,6 +226,22 @@
         <div id="ordersList" style="margin-top: 2rem;"></div>
   </div>
 
+    <!-- ✅ DRIVER DASHBOARD -->
+  <div id="driverDashboard" style="display: none;">
+  <div class="panel">
+    <h2 id="driverWelcome" style="margin-bottom: 1rem;">Welcome!</h2>
+    <button onclick="loadPendingOrders()">View Pending Orders</button>
+    <button onclick="loadDriverAcceptedOrders()">View My Accepted Orders</button>
+    <button onclick="showDriverProfileForm()">Update Profile</button>
+    <button onclick="deleteDriverAccount()">Delete Account</button>
+    <button onclick="handleLogout()">Logout</button>
+    
+  </div>
+  <div id="pendingOrdersBox" style="margin-top: 2rem;"></div>
+  <div id="driverProfileForm" style="margin-top: 2rem; display: none;"></div>
+</div>
+
+
   <script>
     
  const fareTable = {
@@ -387,24 +405,47 @@
     }
 
     async function loadProfile() {
-      const token = localStorage.getItem('token');
-      if (!token) return;
+  const token = localStorage.getItem('token');
+  if (!token) return;
 
-      try {
-        const res = await fetch('http://localhost:3000/auth/profile', {
-          headers: { Authorization: 'Bearer ' + token }
-        });
-        const data = await res.json();
-        if (res.ok) {
-          document.getElementById('authBox').style.display = 'none';
-          document.getElementById('registerBox').style.display = 'none';
-          document.getElementById('dashboard').style.display = 'block';
-          document.getElementById('welcomeMessage').innerText = `Welcome, ${data.name}!`;
-        }
-      } catch {
-        alert('Failed to load profile.');
+  try {
+    const res = await fetch('http://localhost:3000/auth/profile', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      // Hide login and registration
+      document.getElementById('authBox').style.display = 'none';
+      document.getElementById('registerBox').style.display = 'none';
+
+      // Hide both dashboards first
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('driverDashboard').style.display = 'none';
+
+      if (data.role === 'driver') {
+        document.getElementById('driverDashboard').style.display = 'block';
+        document.getElementById('driverWelcome').innerText = `Welcome, ${data.name}!`;
+      } else if (data.role === 'passenger') {
+        document.getElementById('dashboard').style.display = 'block';
+        document.getElementById('welcomeMessage').innerText = `Welcome, ${data.name}!`;
+      } else {
+        alert('Unsupported role.');
       }
     }
+  } catch {
+    alert('Failed to load profile.');
+  }
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.onscroll = function () {
+  document.getElementById('scrollTopBtn').style.display = window.scrollY > 300 ? 'block' : 'none';
+};
+
 
     function toggleCreateOrderForm() {
       const form = document.getElementById('createOrderForm');
@@ -523,6 +564,260 @@
 
     // Auto load profile if token is present
     window.onload = loadProfile;
+ 
+    async function loadProfile() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+
+  try {
+    const res = await fetch('http://localhost:3000/auth/profile', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById('authBox').style.display = 'none';
+      document.getElementById('registerBox').style.display = 'none';
+
+      // Show driver panel if role is driver
+      if (data.role === 'driver') {
+        document.getElementById('driverDashboard').style.display = 'block';
+        document.getElementById('driverWelcome').innerText = `Welcome, ${data.name}!`;
+      } else {
+        document.getElementById('dashboard').style.display = 'block';
+        document.getElementById('welcomeMessage').innerText = `Welcome, ${data.name}!`;
+      }
+    }
+  } catch {
+    alert('Failed to load profile.');
+  }
+}
+
+async function loadPendingOrders() {
+  const token = localStorage.getItem('token');
+  const box = document.getElementById('pendingOrdersBox');
+  box.innerHTML = 'Loading...';
+  document.getElementById('driverProfileForm').style.display = 'none';
+
+  try {
+   const res = await fetch('http://localhost:3000/drivers/orders', {
+  headers: { Authorization: 'Bearer ' + token }
+});
+let orders = await res.json();
+
+// ✅ Filter out accepted or canceled orders
+orders = orders.filter(o => o.status === 'pending' && !o.driverId);
+
+
+    let html = '<h3>Pending Orders</h3>';
+    html += `<button onclick="returnToDriverMenu()" style="margin-bottom: 1rem;">Back to Menu</button>`;
+    if (!orders.length) {
+      html += '<p>No unaccepted orders available.</p>';
+    } else {
+      html += '<ul style="list-style: none;">';
+      orders.forEach(o => {
+        html += `
+          <li style="background:#eee; padding:10px; border-radius:10px; margin-bottom:10px;">
+            <strong>Date:</strong> ${o.date}<br>
+            <strong>From:</strong> ${o.pickupLocation}<br>
+            <strong>To:</strong> ${o.destination}<br>
+            <strong>Time:</strong> ${o.timeOrder}<br>
+            <strong>Phone:</strong> ${o.phoneNumber}<br>
+            <strong>Payment:</strong> RM${o.payment}<br>
+            <button onclick="acceptOrder('${o._id}')">Accept</button>
+          </li>
+        `;
+      });
+      html += '</ul>';
+    }
+    box.innerHTML = html;
+  } catch {
+    box.innerHTML = 'Failed to load orders.';
+  }
+}
+
+async function acceptOrder(orderId) {
+  const token = localStorage.getItem('token');
+  if (!confirm('Accept this order?')) return;
+
+  try {
+    const res = await fetch('http://localhost:3000/drivers/accept', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token
+      },
+      body: JSON.stringify({ orderId })
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      alert('Order accepted.');
+      loadPendingOrders(); // Refresh
+    } else {
+      alert(data.error || 'Failed to accept order.');
+    }
+  } catch {
+    alert('Error accepting order.');
+  }
+}
+
+function showDriverProfileForm() {
+  const formBox = document.getElementById('driverProfileForm');
+  const ordersBox = document.getElementById('pendingOrdersBox');
+  ordersBox.innerHTML = '';
+  formBox.style.display = 'block';
+  formBox.innerHTML = `<button onclick="returnToDriverMenu()" style="margin-bottom: 1rem;">Back to Menu</button>` +
+`
+  <h3>Update Profile</h3>
+  <div class="input-group"><label>Name</label><input id="d_name" type="text" /></div>
+  <div class="input-group"><label>Email</label><input id="d_email" type="email" /></div>
+  <div class="input-group"><label>Password</label><input id="d_password" type="password" /></div>
+  <div class="input-group"><label>Phone</label><input id="d_phone" type="text" /></div>
+  <div class="input-group"><label>Car Name</label><input id="d_carname" type="text" /></div>
+  <div class="input-group"><label>Location From</label><input id="d_location" type="text" /></div>
+  <button class="btn" onclick="submitDriverProfile()">Save</button>
+`;
+}
+
+async function submitDriverProfile() {
+  const token = localStorage.getItem('token');
+
+  // ✅ Require all fields
+  if (
+    !document.getElementById('d_name').value.trim() ||
+    !document.getElementById('d_email').value.trim() ||
+    !document.getElementById('d_password').value.trim() ||
+    !document.getElementById('d_phone').value.trim() ||
+    !document.getElementById('d_carname').value.trim() ||
+    !document.getElementById('d_location').value.trim()
+  ) {
+    alert('Please fill in all fields before submitting.');
+    return;
+  }
+
+  const payload = {
+    name: document.getElementById('d_name').value.trim(),
+    email: document.getElementById('d_email').value.trim(),
+    password: document.getElementById('d_password').value.trim(),
+    phone: document.getElementById('d_phone').value.trim(),
+    carname: document.getElementById('d_carname').value.trim(),
+    locationFrom: document.getElementById('d_location').value.trim()
+  };
+
+  try {
+    const res = await fetch('http://localhost:3000/drivers/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      alert('Profile updated.');
+      document.getElementById('driverProfileForm').style.display = 'none';
+    } else {
+      alert(data.error || 'Update failed.');
+    }
+  } catch {
+    alert('Error updating profile.');
+  }
+}
+
+
+function returnToDriverMenu() {
+  document.getElementById('pendingOrdersBox').innerHTML = '';
+  document.getElementById('driverProfileForm').style.display = 'none';
+}
+
+async function loadDriverAcceptedOrders() {
+  const token = localStorage.getItem('token');
+  const box = document.getElementById('pendingOrdersBox');
+  document.getElementById('driverProfileForm').style.display = 'none';
+  box.innerHTML = 'Loading...';
+
+  try {
+    const res = await fetch('http://localhost:3000/drivers/my-orders', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const orders = await res.json();
+
+    let html = `<h3>My Accepted Orders</h3>
+      <button onclick="returnToDriverMenu()" style="margin-bottom: 1rem;">Back to Menu</button>`;
+
+    if (!orders.length) {
+      html += '<p>No accepted orders yet.</p>';
+    } else {
+      orders.forEach(o => {
+        html += `
+          <div style="background:#eee; padding:10px; margin-bottom:10px; border-radius:10px;">
+            <strong>Date:</strong> ${o.date}<br>
+            <strong>From:</strong> ${o.pickupLocation}<br>
+            <strong>To:</strong> ${o.destination}<br>
+            <strong>Time:</strong> ${o.timeOrder}<br>
+            <strong>Phone:</strong> ${o.phoneNumber}<br>
+            <strong>Payment:</strong> RM${o.payment}<br>
+            <button onclick="cancelAcceptedOrder('${o._id}')">Cancel Order</button>
+          </div>
+        `;
+      });
+    }
+
+    box.innerHTML = html;
+  } catch {
+    box.innerHTML = 'Failed to load accepted orders.';
+  }
+}
+
+async function cancelAcceptedOrder(orderId) {
+  const token = localStorage.getItem('token');
+  if (!confirm('Cancel this order?')) return;
+
+  try {
+    const res = await fetch(`http://localhost:3000/drivers/order/${orderId}/cancel`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      alert('Order canceled and returned to pending.');
+      loadDriverAcceptedOrders();
+    } else {
+      alert(data.error || 'Failed to cancel.');
+    }
+  } catch {
+    alert('Error canceling order.');
+  }
+}
+
+async function deleteDriverAccount() {
+  const token = localStorage.getItem('token');
+  if (!confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
+
+  try {
+    const res = await fetch('http://localhost:3000/drivers/account', {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+
+    if (res.ok) {
+      alert('Account deleted.');
+      localStorage.removeItem('token');
+      location.reload();
+    } else {
+      const data = await res.json();
+      alert(data.error || 'Failed to delete account.');
+    }
+  } catch {
+    alert('Error deleting account.');
+  }
+}
+
+
+
   </script>
 </body>
 </html>
