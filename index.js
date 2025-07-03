@@ -4,12 +4,12 @@ const { MongoClient, ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const port = process.env.PORT || 3000;
 // --- Serve static files (HTML, CSS, JS) --- // 
 require('dotenv').config();
 
 
 const app = express();
-const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(require('cors')());
 
@@ -65,7 +65,7 @@ async function start() {
     }
 }
 
-start();
+
 
 // ---------------- AUTH ----------------
 app.post('/auth/register', async (req, res) => {
@@ -579,6 +579,7 @@ app.get('/auth/profile', authenticate, async (req, res) => {
 
 app.use(express.static(path.join(__dirname)));
 
-// --- Start Server --- //
-app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
 
+start().then(() => {
+    app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
+});
