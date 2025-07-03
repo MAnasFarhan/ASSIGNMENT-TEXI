@@ -65,6 +65,17 @@ async function start() {
     }
 }
 
+app.get('/', (req, res) => {
+  res.send(' MyTaxi backend is running.');
+});
+
+process.on('uncaughtException', err => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+});
+process.on('unhandledRejection', err => {
+  console.error('UNHANDLED PROMISE REJECTION:', err);
+});
+
 
 
 // ---------------- AUTH ----------------
