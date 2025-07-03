@@ -7,20 +7,45 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 // --- Serve static files (HTML, CSS, JS) --- // 
 require('dotenv').config();
-const port = process.env.PORT || 3000;
 
 const app = express();
+const port = process.env.PORT || 3000;
+const uri = 'mongodb+srv://Anas:KxGZ8SZBWykDuG1d@cluster0.7hfi53x.mongodb.net/';
+const client = new MongoClient(uri);
+
 app.use(express.json());
 app.use(cors());
 
-const uri = 'mongodb+srv://Anas:KxGZ8SZBWykDuG1d@cluster0.7hfi53x.mongodb.net/';
-const client = new MongoClient(uri);
-let db;
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'defaultsecret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
 const saltRounds = 10;
 
+// Connect to MongoDB and start server
+async function start() {
+  try {
+    await client.connect();
+    console.log('✅ Connected to MongoDB');
+
+    // Set DB reference here
+    db = client.db('MyTaxi'); // <- replace with your actual DB name
+
+    // Example route
+    app.get('/', (req, res) => {
+      res.send('Server is running ');
+    });
+
+    app.listen(port, () => {
+      console.log(` Server running on http://localhost:${port}`);
+    });
+
+  } catch (err) {
+    console.error(' MongoDB connection error:', err);
+    process.exit(1); // Force exit so Azure can retry
+  }
+}
+
+start();
 
 function authenticate(req, res, next) {
     const token = req.headers.authorization?.split(' ')[1];
