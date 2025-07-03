@@ -1,37 +1,26 @@
 // ASSIGNMENT-TEXI1
 const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
+const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-const port = process.env.PORT || 3000;
 // --- Serve static files (HTML, CSS, JS) --- // 
 require('dotenv').config();
-
+const port = process.env.PORT || 3000;
 
 const app = express();
 app.use(express.json());
-app.use(require('cors')());
-
-let db; // Global variable to hold the database reference
+app.use(cors());
 
 const uri = 'mongodb+srv://Anas:KxGZ8SZBWykDuG1d@cluster0.7hfi53x.mongodb.net/';
 const client = new MongoClient(uri);
+let db;
 
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
+const saltRounds = 10;
 
-// --- Database Connection --- //
-async function connectToMongoDB() {
-    const uri = process.env.MONGODB_URI || 'mongodb+srv://b122410708:b122410708@assignment.nuhogr8.mongodb.net/';
-    const client = new MongoClient(uri);
-    try {
-        await client.connect();
-        db = client.db('Grab');
-        console.log('Connected to MongoDB');
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-connectToMongoDB();
 
 function authenticate(req, res, next) {
     const token = req.headers.authorization?.split(' ')[1];
@@ -60,23 +49,13 @@ async function start() {
         await client.connect();
         db = client.db('MyTaxi');
         console.log("Connected to MongoDB");
+        app.listen(3000, () => console.log("Server running on http://localhost:3000"));
     } catch (err) {
         console.error(err);
     }
 }
 
-app.get('/', (req, res) => {
-  res.send(' MyTaxi backend is running.');
-});
-
-process.on('uncaughtException', err => {
-  console.error('UNCAUGHT EXCEPTION:', err);
-});
-process.on('unhandledRejection', err => {
-  console.error('UNHANDLED PROMISE REJECTION:', err);
-});
-
-
+start();
 
 // ---------------- AUTH ----------------
 app.post('/auth/register', async (req, res) => {
@@ -590,7 +569,6 @@ app.get('/auth/profile', authenticate, async (req, res) => {
 
 app.use(express.static(path.join(__dirname)));
 
+// --- Start Server --- //
+app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
 
-start().then(() => {
-    app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
-});
