@@ -2,8 +2,8 @@
   "name": "assignment",
   "version": "1.0.0",
   "description": "��#\u0000 \u0000A\u0000S\u0000S\u0000I\u0000G\u0000N\u0000M\u0000E\u0000N\u0000T\u0000-\u0000T\u0000E\u0000X\u0000I\u0000\r\u0000 \u0000",
-  "main": "index.js",
-  "scripts": {
+  "main": "index.js",  
+    "scripts": {
     "start": "node index.js"
   },
   "repository": {
