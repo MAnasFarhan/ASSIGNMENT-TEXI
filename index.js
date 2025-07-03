@@ -5,8 +5,7 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-// --- Serve static files (HTML, CSS, JS) --- //
-app.use(express.static(path.join(__dirname))); // Serve static files from the 'public' directory
+// --- Serve static files (HTML, CSS, JS) --- // 
 require('dotenv').config();
 const port = process.env.PORT || 3000;
 
@@ -568,7 +567,7 @@ app.get('/auth/profile', authenticate, async (req, res) => {
 });
 
 
-
+app.use(express.static(path.join(__dirname)));
 
 // --- Start Server --- //
 app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
