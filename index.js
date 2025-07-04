@@ -15,8 +15,7 @@ app.use(require('cors')());
 const saltRounds = 10;
 
 let db;
-// --- JWT Configuration --- //
-const JWT_SECRET = process.env.JWT_SECRET
+
 
 // --- Database Connection --- //
 async function connectToMongoDB() {
