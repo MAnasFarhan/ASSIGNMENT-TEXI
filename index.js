@@ -569,5 +569,5 @@ app.get('/auth/profile', authenticate, async (req, res) => {
 app.use(express.static(path.join(__dirname)));
 
 // --- Start Server --- //
-app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
+app.listen(port, () => {console.log(`Server running at http://localhost:${port}`);});
 
