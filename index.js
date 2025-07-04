@@ -13,6 +13,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+const saltRounds = 10;
 const uri = 'mongodb+srv://Anas:KxGZ8SZBWykDuG1d@cluster0.7hfi53x.mongodb.net/';
 const client = new MongoClient(uri);
 let db;
