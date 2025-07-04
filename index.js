@@ -1,35 +1,22 @@
 // ASSIGNMENT-TEXI1
 const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
+const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 // --- Serve static files (HTML, CSS, JS) --- // 
 require('dotenv').config();
-
+const port = process.env.PORT || 3000;
 
 const app = express();
-const port = process.env.PORT || 3000;
 app.use(express.json());
-app.use(require('cors')());
-const saltRounds = 10;
+app.use(cors());
 
+const uri = 'mongodb+srv://Anas:KxGZ8SZBWykDuG1d@cluster0.7hfi53x.mongodb.net/';
+const client = new MongoClient(uri);
 let db;
 
-
-// --- Database Connection --- //
-async function connectToMongoDB() {
-    const uri = process.env.MONGODB_URI || 'mongodb+srv://Anas:KxGZ8SZBWykDuG1d@cluster0.7hfi53x.mongodb.net/';
-    const client = new MongoClient(uri);
-    try {
-        await client.connect();
-        db = client.db('MyTaxi'); // Use your database name here
-        console.log('Connected to MongoDB');
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-connectToMongoDB();
 
 
 function authenticate(req, res, next) {
@@ -37,7 +24,7 @@ function authenticate(req, res, next) {
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
         next();
     } catch (err) {
@@ -54,6 +41,18 @@ function authorize(roles) {
     };
 }
 
+async function start() {
+    try {
+        await client.connect();
+        db = client.db('MyTaxi');
+        console.log("Connected to MongoDB");
+        app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+start();
 
 // ---------------- AUTH ----------------
 app.post('/auth/register', async (req, res) => {
@@ -568,5 +567,5 @@ app.get('/auth/profile', authenticate, async (req, res) => {
 app.use(express.static(path.join(__dirname)));
 
 // --- Start Server --- //
-app.listen(port, () => {console.log(`Server running at http://localhost:${port}`);});
+app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
 
