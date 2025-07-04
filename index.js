@@ -21,15 +21,6 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
 const saltRounds = 10;
 
-// Serve static files (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Fallback route for SPA or index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-
 
 function authenticate(req, res, next) {
     const token = req.headers.authorization?.split(' ')[1];
@@ -58,6 +49,7 @@ async function start() {
         await client.connect();
         db = client.db('MyTaxi');
         console.log("Connected to MongoDB");
+        app.listen(3000, () => console.log("Server running on http://localhost:3000"));
     } catch (err) {
         console.error(err);
     }
@@ -575,6 +567,7 @@ app.get('/auth/profile', authenticate, async (req, res) => {
 });
 
 
+app.use(express.static(path.join(__dirname)));
 
 // --- Start Server --- //
 app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
