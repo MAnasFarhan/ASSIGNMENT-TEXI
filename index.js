@@ -1,25 +1,36 @@
 // ASSIGNMENT-TEXI1
 const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
-const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 // --- Serve static files (HTML, CSS, JS) --- // 
 require('dotenv').config();
-const port = process.env.PORT || 3000;
+
 
 const app = express();
+const port = process.env.PORT || 3000;
 app.use(express.json());
-app.use(cors());
-
-const uri = 'mongodb+srv://Anas:KxGZ8SZBWykDuG1d@cluster0.7hfi53x.mongodb.net/';
-const client = new MongoClient(uri);
-let db;
-
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
+app.use(require('cors')());
 const saltRounds = 10;
+
+let db;
+// --- JWT Configuration --- //
+const JWT_SECRET = process.env.JWT_SECRET
+
+// --- Database Connection --- //
+async function connectToMongoDB() {
+    const uri = process.env.MONGODB_URI || 'mongodb+srv://Anas:KxGZ8SZBWykDuG1d@cluster0.7hfi53x.mongodb.net/';
+    const client = new MongoClient(uri);
+    try {
+        await client.connect();
+        db = client.db('Grab');
+        console.log('Connected to MongoDB');
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+connectToMongoDB();
 
 
 function authenticate(req, res, next) {
@@ -44,18 +55,6 @@ function authorize(roles) {
     };
 }
 
-async function start() {
-    try {
-        await client.connect();
-        db = client.db('MyTaxi');
-        console.log("Connected to MongoDB");
-        app.listen(3000, () => console.log("Server running on http://localhost:3000"));
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-start();
 
 // ---------------- AUTH ----------------
 app.post('/auth/register', async (req, res) => {
