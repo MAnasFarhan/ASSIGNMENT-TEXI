@@ -21,6 +21,10 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
 const saltRounds = 10;
 
+app.get('/', (req, res) => {
+  res.send('Server is alive');
+});
+
 
 function authenticate(req, res, next) {
     const token = req.headers.authorization?.split(' ')[1];
