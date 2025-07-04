@@ -13,11 +13,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const saltRounds = 10;
 const uri = 'mongodb+srv://Anas:KxGZ8SZBWykDuG1d@cluster0.7hfi53x.mongodb.net/';
 const client = new MongoClient(uri);
 let db;
 
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
+const saltRounds = 10;
 
 
 function authenticate(req, res, next) {
@@ -25,7 +27,7 @@ function authenticate(req, res, next) {
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, JWT_SECRET);
         req.user = decoded;
         next();
     } catch (err) {
@@ -47,7 +49,6 @@ async function start() {
         await client.connect();
         db = client.db('MyTaxi');
         console.log("Connected to MongoDB");
-        app.listen(3000, () => console.log("Server running on http://localhost:3000"));
     } catch (err) {
         console.error(err);
     }
