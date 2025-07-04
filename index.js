@@ -24,7 +24,7 @@ async function connectToMongoDB() {
     const client = new MongoClient(uri);
     try {
         await client.connect();
-        db = client.db('ASSIGNMENT-TEXI1');
+        db = client.db('MyTaxi'); // Use your database name here
         console.log('Connected to MongoDB');
     } catch (error) {
         console.error('Error:', error);
